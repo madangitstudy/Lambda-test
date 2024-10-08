@@ -1,0 +1,77 @@
+import json
+import  requests
+from datetime import datetime, timedelta
+
+# Intellysis API URL for fetching OTPG elgibility
+INTELLYSIS_API_URL = "https://intellysis-api-url.com/elgibility"
+#Amelia API URL for generating vouchers
+AMELIA_API_URL = "https://intellysistraining.ca/vouchers/Generate"
+
+#Lambda function handler
+def lambda_handler(event, context):
+    #Step 1: Get eligible passengers from Intellysis API
+    eligible_passengers = check_eligibility()
+    
+    if not eligible_passengers:
+        return {
+            'statusCode': 200,
+            'body': json.dumps('No eligible passengers found.')
+        }
+        
+    # Step2: For each eligible passenger, generate a voucher
+    vouchers = []
+    for passenger in eligible_passengers:
+        voucher = generate_voucher(passenger)
+        if voucher:
+            vouchers.append(voucher)
+            
+    # Step3: Return the list of generated vouchers
+    return {
+        'statusCode': 200,
+        'body': json.dumps({
+            'generatedVouchers': vouchers
+        })
+    }
+
+# Function to check OTPG eligiblity via Intellysis API
+def check_eligibility():
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer YOUR_INTELLYSIS_API_KEY'
+    }
+    response = requests.get(INTELLYSIS_API_URL, headers=headers)
+    
+    if response.status_code== 200,
+    # Parse the eligible passengers data (assuming response is in JSON format)
+        return response.json().get('elgiblePassengers', [])
+    else:
+        print('f"Failed to fetech elgibility: {response.status_code}")
+        return []
+        
+# Function to generate voucher via Amelia API
+def generate_voucher(passenger):
+    # Prepare the request payload for Amelia API
+    payload = {
+        "passengerFirstName": passenger["firstName"],
+        "passengerLastName": passenger["lastName"],
+        "expiryDate": (datetime.now() + timedelta(days=30)).strftime("%y-%m-%d"),
+        "bookingWindow": "None",
+        "voucherValue": "60 CAD",
+        "pnr": passenger["pnr"]
+    }
+    
+    headers = {
+        "Content-Type": 'applicatio/json',
+        "Authorization": 'Bearer YOUR_AMELIA_API_KEY'
+    }
+    
+    # Make a POST request to generate a voucher
+    response = requests.post(AMELIA_API_URL, headers=headers, json=payload)
+    
+    if response.status_code == 201:
+        # Voucher created succesfully
+        return response.json()
+    else:
+        print(f"Error generating voucher for {passenger['firstName']} {passenger['lastName']}: {response.status_code}")
+        return None
+    
