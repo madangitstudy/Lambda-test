@@ -1,66 +1,79 @@
+import requests
 import json
-import urllib.request
 
-# Function to send payload to Klaviyo using urllib
-def send_to_klaviyo(payload):
-    klaviyo_url = "https://a.klaviyo.com/api/events/"  # Correct API endpoint
-    
-    headers = {
-        "Authorization": f"api-key {payload['token']}",
-        "Content-Type": "application/json"
+# Set API endpoint and endpoint token
+api_endpoint = "https://a.klaviyo.com/api/events/"
+endpoint_token = "pk_8211f01bb2506425691699a26524fc4dbb"
+
+# Set primary passenger's details
+primary_passenger_email = "john.doe@example.com"
+departure_city = "New York"
+departure_airport_code = "JFK"
+arrival_city = "Los Angeles"
+arrival_airport_code = "LAX"
+expected_arrival_time = "2023-07-26T12:00:00"
+actual_arrival_time = "2023-07-26T13:00:00"
+time_length_of_delay = 60
+flight_number = "AA101"
+pnr_booking_id = "ABC123"
+flight_status = "Delayed"
+
+# Set passenger details
+passengers = [
+    {
+        "first_name": "John",
+        "last_name": "Doe",
+        "voucher": {
+            "unique_voucher_code": "Voucher123",
+            "expiry_date": "2023-07-31",
+            "voucher_value": 50.00
+        }
+    },
+    {
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "voucher": {
+            "unique_voucher_code": None,
+            "expiry_date": None,
+            "voucher_value": None
+        }
     }
-    
-    request_headers = {key: value for key, value in headers.items()}
-    
-    data = json.dumps(payload).encode("utf-8")
-    
-    request = urllib.request.Request(klaviyo_url, data=data, headers=request_headers)
-    
-    try:
-        with urllib.request.urlopen(request) as response:
-            response_data = response.read().decode("utf-8")
-            return response_data
-    except urllib.error.HTTPError as e:
-        return f"HTTPError: {e.code}, {e.reason}"
-    except urllib.error.URLError as e:
-        return f"URLError: {e.reason}"
+]
 
-# Lambda Handler
-def lambda_handler(event, context):
-    try:
-        # Hardcoded Klaviyo API token for testing
-        klaviyo_token = "your_actual_klaviyo_private_api_token"  # Replace this with your real API key
-        
-        # Build the payload dynamically from the event
-        payload = {
-            "token": klaviyo_token,
-            "event": "OTPG voucher email",  # Event name should match the flow trigger in Klaviyo
-            "customer_properties": {  # Correct spelling for Klaviyo
-                "$email": event['primary_email']
+# Create JSON payload
+payload = {
+    "event": "OTPG voucher_email",
+    "data": {
+        "primary_passenger": {
+            "email": primary_passenger_email,
+            "flight_details": {
+                "departure_city": departure_city,
+                "departure_airport_code": departure_airport_code,
+                "arrival_city": arrival_city,
+                "arrival_airport_code": arrival_airport_code,
+                "expected_arrival_time": expected_arrival_time,
+                "actual_arrival_time": actual_arrival_time,
+                "time_length_of_delay": time_length_of_delay,
+                "flight_number": flight_number,
+                "pnr_booking_id": pnr_booking_id,
+                "flight_status": flight_status
             },
-            "properties": {  # Event properties being passed to Klaviyo
-                "flight_details": event['flight_details'],
-                "passengers": event['passengers'],
-                "flight_status": event['flight_status']
-            }
+            "passengers": passengers
         }
-        
-        # Send the payload to Klaviyo
-        response = send_to_klaviyo(payload)
-        
-        return {
-            'statusCode': 200,
-            'body': json.dumps(f'Event pushed to Klaviyo successfully: {response}')
-        }
-    
-    except KeyError as e:
-        return {
-            'statusCode': 400,
-            'body': f"Missing key in event: {str(e)}"
-        }
-    
-    except Exception as e:
-        return {
-            'statusCode': 500,
-            'body': f"Internal server error: {str(e)}"
-        }
+    }
+}
+
+# Set Authorization header
+headers = {
+    "Authorization": f"Bearer {endpoint_token}",
+    "Content-Type": "application/json"
+}
+
+# Send push event
+response = requests.post(api_endpoint, headers=headers, data=json.dumps(payload))
+
+# Check response status code
+if response.status_code == 200:
+    print("Push event sent successfully!")
+else:
+    print(f"Error sending push event: {response.text}")
