@@ -1,0 +1,26 @@
+OTPG | Exercise | API to request voucher generated for eligible pax and flight
+Description
+
+Next steps:
+
+Endpoint from intellysis
+
+From API on eligibility for all with TRUE for OTPG, create a voucher
+
+API for generating voucher: amelia API Documentation - Vouchers API - POST vouchers/Generate?fields={fields} (intelisystraining.ca)
+
+Details to pass:
+
+1.Passenger first name
+
+2.Passenger last name
+
+3.Expiry date (30 days from creation date)
+
+4.Booking Window:  none
+
+5.Value of voucher: $60 CAD
+
+6.Only applicable to base fare
+
+7.PNR
