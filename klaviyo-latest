@@ -1,6 +1,5 @@
 import json
 import urllib.request
-import os
 
 # Function to send payload to Klaviyo using urllib
 def send_to_klaviyo(payload):
@@ -29,8 +28,8 @@ def send_to_klaviyo(payload):
 # Lambda Handler
 def lambda_handler(event, context):
     try:
-        # Use environment variable for Klaviyo API token
-        klaviyo_token = os.getenv("KLAVIYO_API_TOKEN", "your_actual_klaviyo_api_token")
+        # Hardcoded Klaviyo API token for testing
+        klaviyo_token = "your_actual_klaviyo_private_api_token"  # Replace this with your real API key
         
         # Build the payload dynamically from the event
         payload = {
