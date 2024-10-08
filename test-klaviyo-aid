@@ -40,12 +40,13 @@ passengers = [
     }
 ]
 
-# Create JSON payload with "email" placed directly in properties
+# Create JSON payload
 payload = {
     "event": "OTPG voucher_email",
-    "email": primary_passenger_email,  # Email is now explicitly at the root
+    "customer_properties": {
+        "$email": primary_passenger_email  # Use '$email' instead of just 'email'
+    },
     "properties": {
-        "email": primary_passenger_email,  # Including it again here as backup
         "flight_details": {
             "departure_city": departure_city,
             "departure_airport_code": departure_airport_code,
@@ -68,13 +69,11 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# Print payload for debugging
-print("Payload being sent:")
-print(json.dumps(payload, indent=4))
-
 # Send push event
 response = requests.post(api_endpoint, headers=headers, data=json.dumps(payload))
 
 # Check response status code and body
-print(f"Response Status Code: {response.status_code}")
-print(f"Response Body: {response.text}")
+if response.status_code == 200:
+    print("Push event sent successfully!")
+else:
+    print(f"Error sending push event: {response.status_code}, {response.text}")
