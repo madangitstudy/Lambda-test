@@ -26,12 +26,12 @@ Details to pass:
 7.PNR
 
 
-test-pax
+Test Event Name
+(unsaved) test event
 
 Response
 {
-  "errorMessage": "Syntax error in module 'lambda_function': unterminated string literal (detected at line 48) (lambda_function.py, line 48)",
-  "errorType": "Runtime.UserCodeSyntaxError",
+  "errorMessage": "Unable to import module 'lambda_function': No module named 'requests'",
+  "errorType": "Runtime.ImportModuleError",
   "requestId": "",
-  "stackTrace": [
-    "  File \"/var/task/lambda_function.py\" Line 48\n            print('f\"Failed to fetech elgibility: {response.status_code}\")"
+  "stackTrace": []
