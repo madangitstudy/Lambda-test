@@ -1,83 +1,99 @@
 import json
 import urllib.request
 
-# Set API endpoint and endpoint token
-api_endpoint = "https://a.klaviyo.com/api/events/"
-endpoint_token = "pk_8211f01bb2506425691699a26524fc4dbb"
+def lambda_handler(event, context):
+    # Set API endpoint and endpoint token
+    api_endpoint = "https://a.klaviyo.com/api/events/"
+    endpoint_token = "pk_8211f01bb2506425691699a26524fc4dbb"
 
-# Set primary passenger's details
-primary_passenger_email = "john.doe@example.com"
-departure_city = "New York"
-departure_airport_code = "JFK"
-arrival_city = "Los Angeles"
-arrival_airport_code = "LAX"
-expected_arrival_time = "2023-07-26T12:00:00"
-actual_arrival_time = "2023-07-26T13:00:00"
-time_length_of_delay = 60
-flight_number = "AA101"
-pnr_booking_id = "ABC123"
-flight_status = "Delayed"
+    # Set primary passenger's details
+    primary_passenger_email = "john.doe@example.com"
+    departure_city = "New York"
+    departure_airport_code = "JFK"
+    arrival_city = "Los Angeles"
+    arrival_airport_code = "LAX"
+    expected_arrival_time = "2023-07-26T12:00:00"
+    actual_arrival_time = "2023-07-26T13:00:00"
+    time_length_of_delay = 60
+    flight_number = "AA101"
+    pnr_booking_id = "ABC123"
+    flight_status = "Delayed"
 
-# Set passenger details
-passengers = [
-    {
-        "first_name": "John",
-        "last_name": "Doe",
-        "voucher": {
-            "unique_voucher_code": "Voucher123",
-            "expiry_date": "2023-07-31",
-            "voucher_value": 50.00
-        }
-    },
-    {
-        "first_name": "Jane",
-        "last_name": "Doe",
-        "voucher": {
-            "unique_voucher_code": None,
-            "expiry_date": None,
-            "voucher_value": None
-        }
-    }
-]
-
-# Create JSON payload
-payload = {
-    "event": "OTPG voucher_email",
-    "customer_properties": {
-        "$email": primary_passenger_email
-    },
-    "properties": {
-        "flight_details": {
-            "departure_city": departure_city,
-            "departure_airport_code": departure_airport_code,
-            "arrival_city": arrival_city,
-            "arrival_airport_code": arrival_airport_code,
-            "expected_arrival_time": expected_arrival_time,
-            "actual_arrival_time": actual_arrival_time,
-            "time_length_of_delay": time_length_of_delay,
-            "flight_number": flight_number,
-            "pnr_booking_id": pnr_booking_id,
-            "flight_status": flight_status
+    # Set passenger details
+    passengers = [
+        {
+            "first_name": "John",
+            "last_name": "Doe",
+            "voucher": {
+                "unique_voucher_code": "Voucher123",
+                "expiry_date": "2023-07-31",
+                "voucher_value": 50.00
+            }
         },
-        "passengers": passengers
+        {
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "voucher": {
+                "unique_voucher_code": None,
+                "expiry_date": None,
+                "voucher_value": None
+            }
+        }
+    ]
+
+    # Create JSON payload
+    payload = {
+        "event": "OTPG voucher_email",
+        "customer_properties": {
+            "$email": primary_passenger_email
+        },
+        "properties": {
+            "flight_details": {
+                "departure_city": departure_city,
+                "departure_airport_code": departure_airport_code,
+                "arrival_city": arrival_city,
+                "arrival_airport_code": arrival_airport_code,
+                "expected_arrival_time": expected_arrival_time,
+                "actual_arrival_time": actual_arrival_time,
+                "time_length_of_delay": time_length_of_delay,
+                "flight_number": flight_number,
+                "pnr_booking_id": pnr_booking_id,
+                "flight_status": flight_status
+            },
+            "passengers": passengers
+        }
     }
-}
 
-# Convert payload to JSON format
-data = json.dumps(payload).encode('utf-8')
+    # Convert payload to JSON format
+    data = json.dumps(payload).encode('utf-8')
 
-# Set up the request
-req = urllib.request.Request(api_endpoint, data=data, method='POST')
-req.add_header("Authorization", f"Bearer {endpoint_token}")
-req.add_header("Content-Type", "application/json")
+    # Set up the request
+    req = urllib.request.Request(api_endpoint, data=data, method='POST')
+    req.add_header("Authorization", f"Bearer {endpoint_token}")
+    req.add_header("Content-Type", "application/json")
 
-# Send the request
-try:
-    with urllib.request.urlopen(req) as response:
-        response_body = response.read()
-        print("Push event sent successfully!")
-        print(response_body.decode('utf-8'))
-except urllib.error.HTTPError as e:
-    print(f"Error sending push event: {e.code}, {e.read().decode('utf-8')}")
-except urllib.error.URLError as e:
-    print(f"Error sending push event: {e.reason}")
+    # Send the request
+    try:
+        with urllib.request.urlopen(req) as response:
+            response_body = response.read()
+            return {
+                "statusCode": 200,
+                "body": json.dumps({
+                    "message": "Push event sent successfully!",
+                    "response": response_body.decode('utf-8')
+                })
+            }
+    except urllib.error.HTTPError as e:
+        return {
+            "statusCode": e.code,
+            "body": json.dumps({
+                "error": f"Error sending push event: {e.read().decode('utf-8')}"
+            })
+        }
+    except urllib.error.URLError as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({
+                "error": f"Error sending push event: {e.reason}"
+            })
+        }
