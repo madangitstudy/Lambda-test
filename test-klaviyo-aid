@@ -1,9 +1,9 @@
 import requests
 import json
 
-# Set API endpoint and endpoint token
+# Set API endpoint and Private API key (replace with your Private API key)
 api_endpoint = "https://a.klaviyo.com/api/events/"
-endpoint_token = "pk_8211f01bb2506425691699a26524fc4dbb"
+private_api_key = "YOUR_PRIVATE_API_KEY"  # Replace this with your Private API key starting with "sk_..."
 
 # Set primary passenger's details
 primary_passenger_email = "john.doe@example.com"
@@ -42,11 +42,11 @@ passengers = [
 
 # Create JSON payload
 payload = {
-    "event": "OTPG voucher_email",
+    "event": "OTPG voucher_email",  # Event name
     "customer_properties": {
-        "$email": primary_passenger_email  # Use '$email' instead of just 'email'
+        "$email": primary_passenger_email  # Primary email required for Klaviyo event
     },
-    "properties": {
+    "properties": {  # Event-specific properties
         "flight_details": {
             "departure_city": departure_city,
             "departure_airport_code": departure_airport_code,
@@ -63,16 +63,16 @@ payload = {
     }
 }
 
-# Set Authorization header
+# Set Authorization header with Private API key
 headers = {
-    "Authorization": f"Bearer {endpoint_token}",
+    "Authorization": f"Bearer {private_api_key}",  # Bearer authorization for Private API key
     "Content-Type": "application/json"
 }
 
-# Send push event
+# Send the POST request
 response = requests.post(api_endpoint, headers=headers, data=json.dumps(payload))
 
-# Check response status code and body
+# Check the response status code and body
 if response.status_code == 200:
     print("Push event sent successfully!")
 else:
