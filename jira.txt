@@ -31,7 +31,8 @@ Test Event Name
 
 Response
 {
-  "errorMessage": "Unable to import module 'lambda_function': No module named 'requests'",
-  "errorType": "Runtime.ImportModuleError",
+  "errorMessage": "Handler 'lambda_handler' missing on module 'lambda_function'",
+  "errorType": "Runtime.HandlerNotFound",
   "requestId": "",
   "stackTrace": []
+}
