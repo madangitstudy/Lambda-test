@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 # Intellysis API URL for checking OTPG eligibility
 INTELLYSIS_API_URL = "https://intellysis-api-url.com/eligibility"
-# Amelia API URL for generating vouchers
+# Amelia API URL for generating vouchers 
 AMELIA_API_URL = "https://intelisystraining.ca/vouchers/Generate"
 
 # Lambda function handler
@@ -26,6 +26,7 @@ def lambda_handler(event, context):
     # For each eligible passenger, generate a voucher
     vouchers = []
     for passenger in eligible_passengers:
+        print(f"Processing passenger: {passenger}")  # Log passenger details
         voucher = generate_voucher(passenger)
         if voucher:
             vouchers.append(voucher)
@@ -42,7 +43,7 @@ def lambda_handler(event, context):
 def check_eligibility():
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJEZXYgVGVhbSIsIm5hbWUiOiJWaWtyYW0iLCJhZG1pbiI6IlRydWUiLCJpYXQiOjE3MjgzODc1MDYsImV4cCI6MTczMDk3OTUwNn0.QMpmRHXoL98PrSF9ETMtIs3kQVLZEzzg1w74s0hh3x4'
+        'Authorization': 'Bearer YOUR_INTELLYSIS_API_KEY'
     }
     
     req = urllib.request.Request(INTELLYSIS_API_URL, headers=headers)
@@ -51,6 +52,7 @@ def check_eligibility():
         with urllib.request.urlopen(req) as response:
             if response.status == 200:
                 data = response.read()
+                print(f"Eligibility API Response: {data}")  # Log API response
                 # Parse the eligible passengers data (assuming response is in JSON format)
                 return json.loads(data).get('eligiblePassengers', [])
             else:
@@ -84,7 +86,9 @@ def generate_voucher(passenger):
         with urllib.request.urlopen(req) as response:
             if response.status == 201:
                 # Voucher created successfully
-                return json.loads(response.read())
+                voucher_data = json.loads(response.read())
+                print(f"Voucher generated: {voucher_data}")  # Log voucher details
+                return voucher_data
             else:
                 print(f"Error generating voucher for {passenger['firstName']} {passenger['lastName']}: {response.status}")
                 return None
