@@ -1,6 +1,5 @@
 import json
 import urllib.request
-import urllib.parse
 from datetime import datetime, timedelta
 
 # Intellysis API URL for checking OTPG eligibility
@@ -43,7 +42,7 @@ def lambda_handler(event, context):
 def check_eligibility():
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJEZXYgVGVhbSIsIm5hbWUiOiJWaWtyYW0iLCJhZG1pbiI6IlRydWUiLCJpYXQiOjE3MjgzODc1MDYsImV4cCI6MTczMDk3OTUwNn0.QMpmRHXoL98PrSF9ETMtIs3kQVLZEzzg1w74s0hh3x4'
+        'Authorization': 'Bearer your_token_here'  # Update with actual token
     }
     
     req = urllib.request.Request(INTELLYSIS_API_URL, headers=headers)
@@ -63,8 +62,7 @@ def check_eligibility():
         return []
 
 # Function to generate voucher via Amelia API
-
-    def generate_voucher(passenger):
+def generate_voucher(passenger):
     # Prepare the request payload for Amelia API
     payload = {
         "passengerFirstName": passenger["firstName"],
@@ -77,7 +75,7 @@ def check_eligibility():
 
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJEZXYgVGVhbSIsIm5hbWUiOiJWaWtyYW0iLCJhZG1pbiI6IlRydWUiLCJpYXQiOjE3MjgzODc1MDYsImV4cCI6MTczMDk3OTUwNn0.QMpmRHXoL98PrSF9ETMtIs3kQVLZEzzg1w74s0hh3x4'
+        'Authorization': 'Bearer your_token_here'  # Update with actual token
     }
     
     data = json.dumps(payload).encode('utf-8')
@@ -97,4 +95,3 @@ def check_eligibility():
     except Exception as e:
         print(f"Error generating voucher: {e}")
         return None
-    
