@@ -43,24 +43,23 @@ passengers = [
 # Create JSON payload
 payload = {
     "event": "OTPG voucher_email",
-    "email": primary_passenger_email,  # Move email to root level
-    "data": {
-        "primary_passenger": {
-            "email": primary_passenger_email,
-            "flight_details": {
-                "departure_city": departure_city,
-                "departure_airport_code": departure_airport_code,
-                "arrival_city": arrival_city,
-                "arrival_airport_code": arrival_airport_code,
-                "expected_arrival_time": expected_arrival_time,
-                "actual_arrival_time": actual_arrival_time,
-                "time_length_of_delay": time_length_of_delay,
-                "flight_number": flight_number,
-                "pnr_booking_id": pnr_booking_id,
-                "flight_status": flight_status
-            },
-            "passengers": passengers
-        }
+    "customer_properties": {
+        "email": primary_passenger_email  # This is the key Klaviyo looks for
+    },
+    "properties": {
+        "flight_details": {
+            "departure_city": departure_city,
+            "departure_airport_code": departure_airport_code,
+            "arrival_city": arrival_city,
+            "arrival_airport_code": arrival_airport_code,
+            "expected_arrival_time": expected_arrival_time,
+            "actual_arrival_time": actual_arrival_time,
+            "time_length_of_delay": time_length_of_delay,
+            "flight_number": flight_number,
+            "pnr_booking_id": pnr_booking_id,
+            "flight_status": flight_status
+        },
+        "passengers": passengers
     }
 }
 
