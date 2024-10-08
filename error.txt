@@ -3,28 +3,21 @@ import json
 
 # Set API endpoint and token
 api_endpoint = "https://a.klaviyo.com/api/events/"
-endpoint_token = "YOUR_PRIVATE_API_KEY"  # Make sure this is your Private API Key, not Public
+endpoint_token = "YOUR_PRIVATE_API_KEY"  # Replace with your Private API Key
 
-# Set headers correctly
+# Read payload from JSON file
+with open('payload.json') as f:
+    payload = json.load(f)
+
+# Set headers
 headers = {
-    "Authorization": f"Bearer {endpoint_token}",  # Correct token format
+    "Authorization": f"Bearer {endpoint_token}",  # Ensure proper token format
     "Content-Type": "application/json"
 }
 
-# Example payload for testing (you can use the real one later)
-payload = {
-    "event": "Test Event",
-    "customer_properties": {
-        "$email": "test@example.com"
-    },
-    "properties": {
-        "test_key": "test_value"
-    }
-}
-
-# Send the POST request with proper authentication
+# Send POST request with proper authentication and JSON payload
 response = requests.post(api_endpoint, headers=headers, data=json.dumps(payload))
 
-# Check response
+# Print the response
 print(f"Status Code: {response.status_code}")
 print(f"Response Body: {response.text}")
