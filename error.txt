@@ -1,0 +1,17 @@
+Test Event Name
+test-pax
+
+Response
+{
+  "statusCode": 200,
+  "body": "{\"generatedVouchers\": []}"
+}
+
+Function Logs
+START RequestId: 74250c50-854e-4698-b25b-4f0c4d89a870 Version: $LATEST
+Processing passenger: {'firstName': 'Alice', 'lastName': 'Smit', 'pnr': 'PNR123'}
+Error generating voucher: HTTP Error 404: Not Found
+Processing passenger: {'firstName': 'Bob', 'lastName': 'Johnson', 'pnr': 'PNR456'}
+Error generating voucher: HTTP Error 404: Not Found
+END RequestId: 74250c50-854e-4698-b25b-4f0c4d89a870
+REPORT RequestId: 74250c50-854e-4698-b25b-4f0c4d89a870	Duration: 1151.48 ms	Billed Duration: 1152 ms	Memory Size: 128 MB	Max Memory Used: 48 MB	Init Duration: 137.73 ms
