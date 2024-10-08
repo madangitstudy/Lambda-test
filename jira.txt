@@ -31,8 +31,6 @@ Test Event Name
 
 Response
 {
-  "errorMessage": "Handler 'lambda_handler' missing on module 'lambda_function'",
-  "errorType": "Runtime.HandlerNotFound",
-  "requestId": "",
-  "stackTrace": []
+  "statusCode": 401,
+  "body": "{\"error\": \"Error sending push event: {\\\"errors\\\":[{\\\"id\\\":\\\"1e2443a3-7afb-4ab7-aabb-4320ca0a40f7\\\",\\\"status\\\":401,\\\"code\\\":\\\"not_authenticated\\\",\\\"title\\\":\\\"Authentication credentials were not provided.\\\",\\\"detail\\\":\\\"Missing or invalid access token.\\\",\\\"source\\\":{\\\"pointer\\\":\\\"/data/\\\"}}]}\"}"
 }
