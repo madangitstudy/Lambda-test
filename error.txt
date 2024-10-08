@@ -1,14 +1,30 @@
-{
-    "errors": [
-        {
-            "id": "b9894799-19e9-47fa-bd56-07ef786ff8c9",
-            "status": 401,
-            "code": "not_authenticated",
-            "title": "Authentication credentials were not provided.",
-            "detail": "Missing or invalid access token.",
-            "source": {
-                "pointer": "/data/"
-            }
-        }
-    ]
+import requests
+import json
+
+# Set API endpoint and token
+api_endpoint = "https://a.klaviyo.com/api/events/"
+endpoint_token = "YOUR_PRIVATE_API_KEY"  # Make sure this is your Private API Key, not Public
+
+# Set headers correctly
+headers = {
+    "Authorization": f"Bearer {endpoint_token}",  # Correct token format
+    "Content-Type": "application/json"
 }
+
+# Example payload for testing (you can use the real one later)
+payload = {
+    "event": "Test Event",
+    "customer_properties": {
+        "$email": "test@example.com"
+    },
+    "properties": {
+        "test_key": "test_value"
+    }
+}
+
+# Send the POST request with proper authentication
+response = requests.post(api_endpoint, headers=headers, data=json.dumps(payload))
+
+# Check response
+print(f"Status Code: {response.status_code}")
+print(f"Response Body: {response.text}")
