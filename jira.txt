@@ -26,11 +26,17 @@ Details to pass:
 7.PNR
 
 
-Test Event Name
-(unsaved) test event
-
-Response
 {
-  "statusCode": 401,
-  "body": "{\"error\": \"Error sending push event: {\\\"errors\\\":[{\\\"id\\\":\\\"1e2443a3-7afb-4ab7-aabb-4320ca0a40f7\\\",\\\"status\\\":401,\\\"code\\\":\\\"not_authenticated\\\",\\\"title\\\":\\\"Authentication credentials were not provided.\\\",\\\"detail\\\":\\\"Missing or invalid access token.\\\",\\\"source\\\":{\\\"pointer\\\":\\\"/data/\\\"}}]}\"}"
+    "errors": [
+        {
+            "id": "41b213e3-f9bf-40d4-aa2a-f51039a25c0f",
+            "status": 401,
+            "code": "not_authenticated",
+            "title": "Authentication credentials were not provided.",
+            "detail": "Missing or invalid authorization scheme. Please use Klaviyo-API-Key.",
+            "source": {
+                "pointer": "/data/"
+            }
+        }
+    ]
 }
