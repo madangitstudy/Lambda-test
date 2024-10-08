@@ -1,0 +1,80 @@
+import requests
+import json
+
+# Set API endpoint and endpoint token
+api_endpoint = "https://a.klaviyo.com/api/events/"
+endpoint_token = "pk_8211f01bb2506425691699a26524fc4dbb"
+
+# Set primary passenger's details
+primary_passenger_email = "john.doe@example.com"
+departure_city = "New York"
+departure_airport_code = "JFK"
+arrival_city = "Los Angeles"
+arrival_airport_code = "LAX"
+expected_arrival_time = "2023-07-26T12:00:00"
+actual_arrival_time = "2023-07-26T13:00:00"
+time_length_of_delay = 60
+flight_number = "AA101"
+pnr_booking_id = "ABC123"
+flight_status = "Delayed"
+
+# Set passenger details
+passengers = [
+    {
+        "first_name": "John",
+        "last_name": "Doe",
+        "voucher": {
+            "unique_voucher_code": "Voucher123",
+            "expiry_date": "2023-07-31",
+            "voucher_value": 50.00
+        }
+    },
+    {
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "voucher": {
+            "unique_voucher_code": None,
+            "expiry_date": None,
+            "voucher_value": None
+        }
+    }
+]
+
+# Create JSON payload
+payload = {
+    "event": "OTPG voucher_email",
+    "email": primary_passenger_email,  # Move email to root level
+    "data": {
+        "primary_passenger": {
+            "email": primary_passenger_email,
+            "flight_details": {
+                "departure_city": departure_city,
+                "departure_airport_code": departure_airport_code,
+                "arrival_city": arrival_city,
+                "arrival_airport_code": arrival_airport_code,
+                "expected_arrival_time": expected_arrival_time,
+                "actual_arrival_time": actual_arrival_time,
+                "time_length_of_delay": time_length_of_delay,
+                "flight_number": flight_number,
+                "pnr_booking_id": pnr_booking_id,
+                "flight_status": flight_status
+            },
+            "passengers": passengers
+        }
+    }
+}
+
+# Set Authorization header
+headers = {
+    "Authorization": f"Bearer {endpoint_token}",
+    "Content-Type": "application/json"
+}
+
+# Send push event
+response = requests.post(api_endpoint, headers=headers, data=json.dumps(payload))
+
+# Check response status code
+if response.status_code == 200:
+    print("Push event sent successfully!")
+else:
+    print(f"Error sending push event: {response.status_code}, {response.text}")
