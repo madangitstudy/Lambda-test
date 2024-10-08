@@ -24,3 +24,14 @@ Details to pass:
 6.Only applicable to base fare
 
 7.PNR
+
+
+test-pax
+
+Response
+{
+  "errorMessage": "Syntax error in module 'lambda_function': unterminated string literal (detected at line 48) (lambda_function.py, line 48)",
+  "errorType": "Runtime.UserCodeSyntaxError",
+  "requestId": "",
+  "stackTrace": [
+    "  File \"/var/task/lambda_function.py\" Line 48\n            print('f\"Failed to fetech elgibility: {response.status_code}\")"
