@@ -3,9 +3,9 @@ import urllib.request
 from datetime import datetime, timedelta
 
 # Intellysis API URL for checking OTPG eligibility
-INTELLYSIS_API_URL = "https://3xieclb1gc.execute-api.ca-central-1.amazonaws.com/dev"
+INTELLYSIS_API_URL = "https://flairair-api.intelisystraining.ca/RESTv1/Help/Api/POST-vouchers-Generate_fields"
 # Amelia API URL for generating vouchers 
-AMELIA_API_URL = "https://3xieclb1gc.execute-api.ca-central-1.amazonaws.com/dev"
+AMELIA_API_URL = "https://flairair-api.intelisystraining.ca/RESTv1/Help/Api/POST-vouchers-Generate_fields"
 
 # Lambda function handler
 def lambda_handler(event, context):
@@ -42,7 +42,7 @@ def lambda_handler(event, context):
 def check_eligibility():
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJEZXYgVGVhbSIsIm5hbWUiOiJWaWtyYW0iLCJhZG1pbiI6IlRydWUiLCJpYXQiOjE3MjgzODc1MDYsImV4cCI6MTczMDk3OTUwNn0.QMpmRHXoL98PrSF9ETMtIs3kQVLZEzzg1w74s0hh3x4'  # Update with actual token
+        'Authorization': 'Bearer your_token_here'  # Update with actual token
     }
     
     req = urllib.request.Request(INTELLYSIS_API_URL, headers=headers)
@@ -75,7 +75,7 @@ def generate_voucher(passenger):
 
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJEZXYgVGVhbSIsIm5hbWUiOiJWaWtyYW0iLCJhZG1pbiI6IlRydWUiLCJpYXQiOjE3MjgzODc1MDYsImV4cCI6MTczMDk3OTUwNn0.QMpmRHXoL98PrSF9ETMtIs3kQVLZEzzg1w74s0hh3x4'  # Update with actual token
+        'Authorization': 'Bearer your_token_here'  # Update with actual token
     }
     
     data = json.dumps(payload).encode('utf-8')
