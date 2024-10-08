@@ -1,12 +1,11 @@
 import json
 import urllib.request
-import urllib.parse
 from datetime import datetime, timedelta
 
 # Intellysis API URL for checking OTPG eligibility
-INTELLYSIS_API_URL = "https://intellysis-api-url.com/eligibility"
+INTELLYSIS_API_URL = "https://3xieclb1gc.execute-api.ca-central-1.amazonaws.com/dev"
 # Amelia API URL for generating vouchers 
-AMELIA_API_URL = "https://intelisystraining.ca/vouchers/Generate"
+AMELIA_API_URL = "https://3xieclb1gc.execute-api.ca-central-1.amazonaws.com/dev"
 
 # Lambda function handler
 def lambda_handler(event, context):
@@ -43,7 +42,7 @@ def lambda_handler(event, context):
 def check_eligibility():
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer YOUR_INTELLYSIS_API_KEY'
+        'Authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJEZXYgVGVhbSIsIm5hbWUiOiJWaWtyYW0iLCJhZG1pbiI6IlRydWUiLCJpYXQiOjE3MjgzODc1MDYsImV4cCI6MTczMDk3OTUwNn0.QMpmRHXoL98PrSF9ETMtIs3kQVLZEzzg1w74s0hh3x4'  # Update with actual token
     }
     
     req = urllib.request.Request(INTELLYSIS_API_URL, headers=headers)
@@ -73,16 +72,17 @@ def generate_voucher(passenger):
         "voucherValue": "60 CAD",
         "pnr": passenger["pnr"]
     }
-    
+
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer YOUR_AMELIA_API_KEY'
+        'Authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJEZXYgVGVhbSIsIm5hbWUiOiJWaWtyYW0iLCJhZG1pbiI6IlRydWUiLCJpYXQiOjE3MjgzODc1MDYsImV4cCI6MTczMDk3OTUwNn0.QMpmRHXoL98PrSF9ETMtIs3kQVLZEzzg1w74s0hh3x4'  # Update with actual token
     }
     
     data = json.dumps(payload).encode('utf-8')
     req = urllib.request.Request(AMELIA_API_URL, data=data, headers=headers, method='POST')
     
     try:
+        print(f"Sending voucher generation request to {AMELIA_API_URL} with payload: {payload}")  # Log request details
         with urllib.request.urlopen(req) as response:
             if response.status == 201:
                 # Voucher created successfully
