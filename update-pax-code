@@ -42,7 +42,7 @@ def lambda_handler(event, context):
 def check_eligibility():
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer YOUR_INTELLYSIS_API_KEY'
+        'Authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJEZXYgVGVhbSIsIm5hbWUiOiJWaWtyYW0iLCJhZG1pbiI6IlRydWUiLCJpYXQiOjE3MjgzODc1MDYsImV4cCI6MTczMDk3OTUwNn0.QMpmRHXoL98PrSF9ETMtIs3kQVLZEzzg1w74s0hh3x4'
     }
     
     req = urllib.request.Request(INTELLYSIS_API_URL, headers=headers)
