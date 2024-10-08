@@ -1,17 +1,33 @@
-Test Event Name
-test-pax
+def generate_voucher(passenger):
+    # Prepare the request payload for Amelia API
+    payload = {
+        "passengerFirstName": passenger["firstName"],
+        "passengerLastName": passenger["lastName"],
+        "expiryDate": (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d"),
+        "bookingWindow": "None",
+        "voucherValue": "60 CAD",
+        "pnr": passenger["pnr"]
+    }
 
-Response
-{
-  "statusCode": 200,
-  "body": "{\"generatedVouchers\": []}"
-}
-
-Function Logs
-START RequestId: 74250c50-854e-4698-b25b-4f0c4d89a870 Version: $LATEST
-Processing passenger: {'firstName': 'Alice', 'lastName': 'Smit', 'pnr': 'PNR123'}
-Error generating voucher: HTTP Error 404: Not Found
-Processing passenger: {'firstName': 'Bob', 'lastName': 'Johnson', 'pnr': 'PNR456'}
-Error generating voucher: HTTP Error 404: Not Found
-END RequestId: 74250c50-854e-4698-b25b-4f0c4d89a870
-REPORT RequestId: 74250c50-854e-4698-b25b-4f0c4d89a870	Duration: 1151.48 ms	Billed Duration: 1152 ms	Memory Size: 128 MB	Max Memory Used: 48 MB	Init Duration: 137.73 ms
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer YOUR_AMELIA_API_KEY'
+    }
+    
+    data = json.dumps(payload).encode('utf-8')
+    req = urllib.request.Request(AMELIA_API_URL, data=data, headers=headers, method='POST')
+    
+    try:
+        print(f"Sending voucher generation request to {AMELIA_API_URL} with payload: {payload}")  # Log request details
+        with urllib.request.urlopen(req) as response:
+            if response.status == 201:
+                # Voucher created successfully
+                voucher_data = json.loads(response.read())
+                print(f"Voucher generated: {voucher_data}")  # Log voucher details
+                return voucher_data
+            else:
+                print(f"Error generating voucher for {passenger['firstName']} {passenger['lastName']}: {response.status}")
+                return None
+    except Exception as e:
+        print(f"Error generating voucher: {e}")
+        return None
