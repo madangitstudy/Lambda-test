@@ -1,9 +1,9 @@
-import requests
 import json
+import urllib.request
 
-# Set API endpoint and Private API key (replace with your Private API key)
+# Set API endpoint and endpoint token
 api_endpoint = "https://a.klaviyo.com/api/events/"
-private_api_key = "YOUR_PRIVATE_API_KEY"  # Replace this with your Private API key starting with "sk_..."
+endpoint_token = "pk_8211f01bb2506425691699a26524fc4dbb"
 
 # Set primary passenger's details
 primary_passenger_email = "john.doe@example.com"
@@ -42,11 +42,11 @@ passengers = [
 
 # Create JSON payload
 payload = {
-    "event": "OTPG voucher_email",  # Event name
+    "event": "OTPG voucher_email",
     "customer_properties": {
-        "$email": primary_passenger_email  # Primary email required for Klaviyo event
+        "$email": primary_passenger_email
     },
-    "properties": {  # Event-specific properties
+    "properties": {
         "flight_details": {
             "departure_city": departure_city,
             "departure_airport_code": departure_airport_code,
@@ -63,17 +63,21 @@ payload = {
     }
 }
 
-# Set Authorization header with Private API key
-headers = {
-    "Authorization": f"Bearer {private_api_key}",  # Bearer authorization for Private API key
-    "Content-Type": "application/json"
-}
+# Convert payload to JSON format
+data = json.dumps(payload).encode('utf-8')
 
-# Send the POST request
-response = requests.post(api_endpoint, headers=headers, data=json.dumps(payload))
+# Set up the request
+req = urllib.request.Request(api_endpoint, data=data, method='POST')
+req.add_header("Authorization", f"Bearer {endpoint_token}")
+req.add_header("Content-Type", "application/json")
 
-# Check the response status code and body
-if response.status_code == 200:
-    print("Push event sent successfully!")
-else:
-    print(f"Error sending push event: {response.status_code}, {response.text}")
+# Send the request
+try:
+    with urllib.request.urlopen(req) as response:
+        response_body = response.read()
+        print("Push event sent successfully!")
+        print(response_body.decode('utf-8'))
+except urllib.error.HTTPError as e:
+    print(f"Error sending push event: {e.code}, {e.read().decode('utf-8')}")
+except urllib.error.URLError as e:
+    print(f"Error sending push event: {e.reason}")
