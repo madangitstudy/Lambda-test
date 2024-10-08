@@ -43,6 +43,7 @@ passengers = [
 # Create JSON payload
 payload = {
     "event": "OTPG voucher_email",
+    "email": primary_passenger_email,  # Move email to root level
     "data": {
         "primary_passenger": {
             "email": primary_passenger_email,
@@ -76,4 +77,4 @@ response = requests.post(api_endpoint, headers=headers, data=json.dumps(payload)
 if response.status_code == 200:
     print("Push event sent successfully!")
 else:
-    print(f"Error sending push event: {response.text}")
+    print(f"Error sending push event: {response.status_code}, {response.text}")
