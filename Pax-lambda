@@ -1,9 +1,66 @@
-Test Event Name
-test1
+import json
+import urllib.request
+import datetime
 
-Response
-{
-  "errorMessage": "Unable to import module 'lambda_function': No module named 'requests'",
-  "errorType": "Runtime.ImportModuleError",
-  "requestId": "",
-  "stackTrace": []
+def generate_voucher(pnr, first_name, last_name):
+    # Set API endpoint and headers
+    endpoint = "https://intelisystraining.ca/vouchers/Generate"
+    headers = {"Content-Type": "application/json"}
+
+    # Set voucher details
+    voucher_value = 60
+    voucher_currency = "CAD"
+    voucher_expiration_date = (datetime.datetime.now() + datetime.timedelta(days=30)).strftime("%Y-%m-%d")
+    voucher_applicable_to = "base_fare"
+
+    # Set eligibility details
+    voucher_eligibility = {
+        "pnr": pnr,
+        "passenger_first_name": first_name,
+        "passenger_last_name": last_name
+    }
+
+    # Set request body
+    body = {
+        "fields": {
+            "voucher_value": voucher_value,
+            "voucher_currency": voucher_currency,
+            "voucher_expiration_date": voucher_expiration_date,
+            "voucher_applicable_to": voucher_applicable_to,
+            "voucher_eligibility": voucher_eligibility
+        }
+    }
+
+    # Convert body to JSON string and encode it to bytes
+    data = json.dumps(body).encode('utf-8')
+
+    # Create a request object
+    req = urllib.request.Request(endpoint, data=data, headers=headers)
+
+    try:
+        # Send the request and capture the response
+        with urllib.request.urlopen(req) as response:
+            # Read the response and decode it
+            response_data = response.read().decode('utf-8')
+            # Parse the JSON response
+            result = json.loads(response_data)
+
+            # Check for voucher in the response
+            if response.status == 201:
+                return result.get("voucher", "Voucher details missing in response")
+            else:
+                return {"error": f"Unexpected response code: {response.status}"}
+    except urllib.error.HTTPError as e:
+        # Handle HTTP errors
+        return {"error": f"HTTPError: {e.code} {e.reason}"}
+    except urllib.error.URLError as e:
+        # Handle URL errors
+        return {"error": f"URLError: {e.reason}"}
+
+# Example usage:
+pnr = "ABC123"
+first_name = "John"
+last_name = "Doe"
+
+voucher = generate_voucher(pnr, first_name, last_name)
+print(voucher)
