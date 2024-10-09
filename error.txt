@@ -4,5 +4,5 @@ test
 Response
 {
   "statusCode": 400,
-  "body": "{\"errors\":[{\"id\":\"9e755898-b9a7-4dcf-b28a-8d2479f04889\",\"status\":400,\"code\":\"invalid\",\"title\":\"Invalid input.\",\"detail\":\"'customer_properties' is not a valid field for the resource 'event'.\",\"source\":{\"pointer\":\"/data/attributes/customer_properties\"},\"links\":{},\"meta\":{}}]}"
+  "body": "{\"errors\":[{\"id\":\"36eafac5-9eec-4bd2-9308-35da69e6a490\",\"status\":400,\"code\":\"invalid\",\"title\":\"Invalid input.\",\"detail\":\"'data' key missing in relationship\",\"source\":{\"pointer\":\"/data/attributes/profile\"},\"links\":{},\"meta\":{}}]}"
 }
