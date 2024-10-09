@@ -4,5 +4,5 @@ test
 Response
 {
   "statusCode": 400,
-  "body": "{\"errors\":[{\"id\":\"36eafac5-9eec-4bd2-9308-35da69e6a490\",\"status\":400,\"code\":\"invalid\",\"title\":\"Invalid input.\",\"detail\":\"'data' key missing in relationship\",\"source\":{\"pointer\":\"/data/attributes/profile\"},\"links\":{},\"meta\":{}}]}"
+  "body": "{\"errors\":[{\"id\":\"bde9922a-330f-41dc-9072-cf3e8720005b\",\"status\":400,\"code\":\"invalid\",\"title\":\"Invalid input.\",\"detail\":\"'$email' is not a valid field for the resource 'profile'.\",\"source\":{\"pointer\":\"/data/attributes/$email\"},\"links\":{},\"meta\":{}}]}"
 }
