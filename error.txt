@@ -1,10 +1,1 @@
-Test Event Name
-test-pax
-
-Response
-{
-  "errorMessage": "Unable to import module 'lambda_function': No module named 'requests'",
-  "errorType": "Runtime.ImportModuleError",
-  "requestId": "",
-  "stackTrace": []
-}
+Next steps: # Endpoint from intellysis From API on eligibility for all with TRUE for OTPG, create a voucher API for generating voucher: [amelia API Documentation - Vouchers API - POST vouchers/Generate?fields={fields} (intelisystraining.ca)|https://flairair-api.intelisystraining.ca/RESTv1/Help/Api/POST-vouchers-Generate_fields] Details to pass: # Passenger first name # Passenger last name # Expiry date # Booking Window # Value of voucher # PNR
