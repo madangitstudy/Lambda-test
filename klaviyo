@@ -1,64 +1,96 @@
 import json
 import urllib.request
-import os
 
-# Function to send payload to Klaviyo using urllib
-def send_to_klaviyo(payload):
-    klaviyo_url = "https://developers.klaviyo.com/en/reference/create_event"
-    
-    headers = {
-        "Authorization": f"Klaviyo-API-Key {payload['token']}",
-        "Content-Type": "application/json"
-    }
-    
-    request_headers = {key: value for key, value in headers.items()}
-    
-    data = json.dumps(payload).encode("utf-8")
-    
-    request = urllib.request.Request(klaviyo_url, data=data, headers=request_headers)
-    
-    try:
-        with urllib.request.urlopen(request) as response:
-            response_data = response.read().decode("utf-8")
-            return response_data
-    except urllib.error.HTTPError as e:
-        return f"HTTPError: {e.code}, {e.reason}"
-    except urllib.error.URLError as e:
-        return f"URLError: {e.reason}"
-
-# Lambda Handler
 def lambda_handler(event, context):
-    try:
-        # Build the payload dynamically from the event
-        payload = {
-            "token": "your_actual_klaviyo_api_token",  # Replace with actual token or pass it via environment variable
-            "event": "OTPG voucher email",
-            "Customer_properties": {
-                "$email": event['primary_email']
-            },
-            "properties": {
-                "flight_details": event['flight_details'],
-                "passengers": event['passengers'],
-                "flight_status": event['flight_status']
+    # Set API endpoint and endpoint token
+    api_endpoint = "https://a.klaviyo.com/api/events/"
+    endpoint_token = "Klaviyo-API-Key pk_8211f01bb2506425691699a26524fc4dbb"  # Your Klaviyo API key
+
+    # Prepare the data payload
+    payload = {
+        "data": {
+            "type": "event",
+            "attributes": {
+                "properties": {
+                    "flight_details": {
+                        "actual_arrival_time": "2023-07-26T13:00:00",
+                        "arrival_airport_code": "LAX",
+                        "arrival_city": "Los Angeles",
+                        "departure_airport_code": "JFK",
+                        "departure_city": "New York",
+                        "expected_arrival_time": "2023-07-26T12:00:00",
+                        "flight_number": "AA101",
+                        "flight_status": "Delayed",
+                        "pnr_booking_id": "ABC123",
+                        "time_length_of_delay": 60
+                    },
+                    "passengers": [
+                        {
+                            "first_name": "John",
+                            "last_name": "Doe",
+                            "voucher": {
+                                "expiry_date": "2023-07-31",
+                                "unique_voucher_code": "Voucher123",
+                                "voucher_value": 50
+                            }
+                        },
+                        {
+                            "first_name": "Jane",
+                            "last_name": "Doe",
+                            "voucher": {
+                                "expiry_date": None,
+                                "unique_voucher_code": None,
+                                "voucher_value": None
+                            }
+                        }
+                    ]
+                },
+                "metric": {
+                    "data": {
+                        "type": "metric",
+                        "attributes": {
+                            "name": "OTPG voucher_email"  # Add the event name here
+                        }
+                    }
+                },
+                "profile": {
+                    "data": {
+                        "type": "profile",
+                        "attributes": {
+                            "properties": {
+                                "$email": "john.doe@example.com"  # Primary email (mandatory field)
+                            }
+                        }
+                    }
+                }
             }
         }
-        
-        # Send the payload to Klaviyo
-        response = send_to_klaviyo(payload)
-        
+    }
+
+    # Convert payload to JSON
+    json_payload = json.dumps(payload).encode('utf-8')
+
+    # Create request
+    req = urllib.request.Request(api_endpoint, data=json_payload, method="POST")
+    req.add_header("Klaviyo-API-Key", endpoint_token)  # Use Klaviyo-API-Key instead of Bearer
+    req.add_header("Content-Type", "application/json")
+
+    try:
+        # Send the request
+        with urllib.request.urlopen(req) as response:
+            response_body = response.read()
+            return {
+                "statusCode": 200,
+                "body": response_body.decode('utf-8')
+            }
+    except urllib.error.HTTPError as e:
+        error_message = e.read().decode('utf-8')
         return {
-            'statusCode': 200,
-            'body': json.dumps(f'Event pushed to Klaviyo successfully: {response}')
+            "statusCode": e.code,
+            "body": error_message
         }
-    
-    except KeyError as e:
-        return {
-            'statusCode': 400,
-            'body': f"Missing key in event: {str(e)}"
-        }
-    
     except Exception as e:
         return {
-            'statusCode': 500,
-            'body': f"Internal server error: {str(e)}"
+            "statusCode": 500,
+            "body": f"Internal server error: {str(e)}"
         }
