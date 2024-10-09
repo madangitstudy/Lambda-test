@@ -4,7 +4,7 @@ import urllib.request
 def lambda_handler(event, context):
     # Set API endpoint and endpoint token
     api_endpoint = "https://a.klaviyo.com/api/events/"
-    endpoint_token = "pk_8211f01bb2506425691699a26524fc4dbb"  # Your Klaviyo API key
+    endpoint_token = "Klaviyo-API-Key pk_8211f01bb2506425691699a26524fc4dbb"  # Your Klaviyo API key
 
     # Prepare the data payload
     payload = {
