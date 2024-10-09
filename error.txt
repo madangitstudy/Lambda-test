@@ -1,9 +1,6 @@
 {
-  "event": "Test Event",
-  "customer_properties": {
-    "$email": "test@example.com"
-  },
-  "properties": {
-    "test_key": "test_value"
-  }
+  "pnr": "ABC123",
+  "first_name": "John",
+  "last_name": "Doe",
+  "api_key": "your-api-key-here"
 }
