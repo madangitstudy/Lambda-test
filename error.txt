@@ -1,26 +1,59 @@
-Next steps: # Endpoint from intellysis From API on eligibility for all with TRUE for OTPG, create a voucher API for generating voucher: [amelia API Documentation - Vouchers API - POST vouchers/Generate?fields={fields} (intelisystraining.ca)|https://flairair-api.intelisystraining.ca/RESTv1/Help/Api/POST-vouchers-Generate_fields] Details to pass: # Passenger first name # Passenger last name # Expiry date # Booking Window # Value of voucher # PNR
+##########https://a.klaviyo.com/api/events/
 
-
-########################################
 {
-  "voucherType": {
-    "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
-    "key": "aƒJj2ImKybdP8tQcem2rUrd3sa66LEFx¥BLJTdx9on4",
-    "name": "Late Arrival"
+  "event": "OTPG voucher_email",
+  "customer_properties": {
+    "$email": "john.doe@example.com"
   },
-  "generationNumber": 20,
-  "password": null,
-  "personalIdentificationNumber": null,
-  "autoGeneratePersonalIdentificationNumber": {
-    "length": 4
-  },
-  "autoGeneratePassword": {
-    "length": 6
-  },
-  "expiryDate": "2024-11-08T08:41:21.8208243Z",
-  "available": 20,
-  "reason": "Sample reason for generating this voucher"
+  "properties": {
+    "flight_details": {
+      "departure_city": "New York",
+      "departure_airport_code": "JFK",
+      "arrival_city": "Los Angeles",
+      "arrival_airport_code": "LAX",
+      "expected_arrival_time": "2023-07-26T12:00:00",
+      "actual_arrival_time": "2023-07-26T13:00:00",
+      "time_length_of_delay": 60,
+      "flight_number": "AA101",
+      "pnr_booking_id": "ABC123",
+      "flight_status": "Delayed"
+    },
+    "passengers": [
+      {
+        "first_name": "John",
+        "last_name": "Doe",
+        "voucher": {
+          "unique_voucher_code": "Voucher123",
+          "expiry_date": "2023-07-31",
+          "voucher_value": 50
+        }
+      },
+      {
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "voucher": {
+          "unique_voucher_code": null,
+          "expiry_date": null,
+          "voucher_value": null
+        }
+      }
+    ]
+  }
 }
 
-###############################
 
+############################
+{
+    "errors": [
+        {
+            "id": "c5c8ed6b-2ffc-4d7d-8816-f8c9b30fafed",
+            "status": 401,
+            "code": "not_authenticated",
+            "title": "Authentication credentials were not provided.",
+            "detail": "Missing or invalid authorization scheme. Please use Klaviyo-API-Key.",
+            "source": {
+                "pointer": "/data/"
+            }
+        }
+    ]
+}
