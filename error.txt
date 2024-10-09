@@ -1,8 +1,35 @@
-Test Event Name
-test1
-
-Response
 {
-  "statusCode": 401,
-  "body": "{\"errors\":[{\"id\":\"264c4d5f-8fb5-4b4a-9c49-6efac6aa1d75\",\"status\":401,\"code\":\"not_authenticated\",\"title\":\"Authentication credentials were not provided.\",\"detail\":\"Authentication credentials were not provided.\",\"source\":{\"pointer\":\"/data/\"}}]}"
+    "primary_email": "john.doe@example.com",
+    "flight_details": {
+        "departure_city": "New York",
+        "departure_airport_code": "JFK",
+        "arrival_city": "Los Angeles",
+        "arrival_airport_code": "LAX",
+        "expected_arrival_time": "2023-07-26T12:00:00",
+        "actual_arrival_time": "2023-07-26T13:00:00",
+        "time_length_of_delay": 60,
+        "flight_number": "AA101",
+        "pnr_booking_id": "ABC123",
+        "flight_status": "Delayed"
+    },
+    "passengers": [
+        {
+            "first_name": "John",
+            "last_name": "Doe",
+            "voucher": {
+                "unique_voucher_code": "Voucher123",
+                "expiry_date": "2023-07-31",
+                "voucher_value": 50.00
+            }
+        },
+        {
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "voucher": {
+                "unique_voucher_code": null,
+                "expiry_date": null,
+                "voucher_value": null
+            }
+        }
+    ]
 }
