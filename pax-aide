@@ -4,12 +4,12 @@ import datetime
 
 def generate_voucher(pnr, first_name, last_name, api_key):
     # Set API endpoint and headers
-    endpoint = "https://intelisystraining.ca/vouchers/Generate"
+    endpoint = "https://flairair-api.intelisystraining.ca/RESTv1/Help/Api/POST-vouchers-Generate_fields"
     
     # Include the API key in the headers
     headers = {
         "Content-Type": "application/json",
-        "x-api-key": api_key  # Add your API key here
+        "x-api-key": eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJEZXYgVGVhbSIsIm5hbWUiOiJWaWtyYW0iLCJhZG1pbiI6IlRydWUiLCJpYXQiOjE3MjgzODc1MDYsImV4cCI6MTczMDk3OTUwNn0.QMpmRHXoL98PrSF9ETMtIs3kQVLZEzzg1w74s0hh3x4  # Add your API key here
     }
 
     # Set voucher details
