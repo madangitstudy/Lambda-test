@@ -4,5 +4,5 @@ test
 Response
 {
   "statusCode": 400,
-  "body": "{\"errors\":[{\"id\":\"dc511053-4b71-46a7-9ba6-237b481dc7a4\",\"status\":400,\"code\":\"invalid_revision\",\"title\":\"'REVISION' is a required header and must be of the format YYYY-MM-DD\",\"detail\":\"'REVISION' is a required header and must be of the format YYYY-MM-DD\",\"source\":{\"pointer\":\"/data/\"}}]}"
+  "body": "{\"errors\":[{\"id\":\"884c7735-bbae-4dfc-9ef1-023098e35b6b\",\"status\":400,\"code\":\"invalid\",\"title\":\"Invalid input.\",\"detail\":\"An object with data is required\",\"source\":{\"pointer\":\"/data\"},\"links\":{},\"meta\":{}}]}"
 }
