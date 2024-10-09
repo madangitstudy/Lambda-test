@@ -4,7 +4,7 @@ import urllib.request
 def lambda_handler(event, context):
     # Set API endpoint and endpoint token
     api_endpoint = "https://a.klaviyo.com/api/events/"
-    endpoint_token = "Klaviyo-API-Key pk_8211f01bb2506425691699a26524fc4dbb"  # Your Klaviyo API key
+    endpoint_token = "pk_8211f01bb2506425691699a26524fc4dbb"  # Your Klaviyo API key
 
     # Prepare the data payload
     payload = {
@@ -53,7 +53,7 @@ def lambda_handler(event, context):
 
     # Create request
     req = urllib.request.Request(api_endpoint, data=json_payload, method="POST")
-    req.add_header("Klaviyo-API-Key", endpoint_token)  # Use Klaviyo-API-Key instead of Bearer
+    req.add_header("Authorization", f"Klaviyo-API-Key {endpoint_token}")  # Corrected Authorization header
     req.add_header("Content-Type", "application/json")
 
     try:
