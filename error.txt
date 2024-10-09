@@ -15,3 +15,31 @@
                     "expected_arrival_time": "2023-07-26T12:00:00",
                     "actual_arrival_time": "2023-07-26T13:00:00",
                     "time_length_of_delay": 60,
+                    "flight_number": "AA101",
+                    "pnr_booking_id": "ABC123",
+                    "flight_status": "Delayed"
+                },
+                "passengers": [
+                    {
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "voucher": {
+                            "unique_voucher_code": "Voucher123",
+                            "expiry_date": "2023-07-31",
+                            "voucher_value": 50
+                        }
+                    },
+                    {
+                        "first_name": "Jane",
+                        "last_name": "Doe",
+                        "voucher": {
+                            "unique_voucher_code": null,
+                            "expiry_date": null,
+                            "voucher_value": null
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
