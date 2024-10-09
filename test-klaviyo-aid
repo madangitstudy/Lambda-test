@@ -6,45 +6,50 @@ def lambda_handler(event, context):
     api_endpoint = "https://a.klaviyo.com/api/events/"
     endpoint_token = "pk_8211f01bb2506425691699a26524fc4dbb"  # Your Klaviyo API key
 
-    # Prepare the data payload
+    # Prepare the data payload (wrapped inside "data")
     payload = {
-        "event": "OTPG voucher_email",
-        "customer_properties": {
-            "$email": "john.doe@example.com"  # Primary email (mandatory field)
-        },
-        "properties": {
-            "flight_details": {
-                "departure_city": "New York",
-                "departure_airport_code": "JFK",
-                "arrival_city": "Los Angeles",
-                "arrival_airport_code": "LAX",
-                "expected_arrival_time": "2023-07-26T12:00:00",
-                "actual_arrival_time": "2023-07-26T13:00:00",
-                "time_length_of_delay": 60,
-                "flight_number": "AA101",
-                "pnr_booking_id": "ABC123",
-                "flight_status": "Delayed"
-            },
-            "passengers": [
-                {
-                    "first_name": "John",
-                    "last_name": "Doe",
-                    "voucher": {
-                        "unique_voucher_code": "Voucher123",
-                        "expiry_date": "2023-07-31",
-                        "voucher_value": 50.00
-                    }
+        "data": {
+            "type": "event",  # Specify the type of object
+            "attributes": {
+                "event": "OTPG voucher_email",
+                "customer_properties": {
+                    "$email": "john.doe@example.com"  # Primary email (mandatory field)
                 },
-                {
-                    "first_name": "Jane",
-                    "last_name": "Doe",
-                    "voucher": {
-                        "unique_voucher_code": None,
-                        "expiry_date": None,
-                        "voucher_value": None
-                    }
+                "properties": {
+                    "flight_details": {
+                        "departure_city": "New York",
+                        "departure_airport_code": "JFK",
+                        "arrival_city": "Los Angeles",
+                        "arrival_airport_code": "LAX",
+                        "expected_arrival_time": "2023-07-26T12:00:00",
+                        "actual_arrival_time": "2023-07-26T13:00:00",
+                        "time_length_of_delay": 60,
+                        "flight_number": "AA101",
+                        "pnr_booking_id": "ABC123",
+                        "flight_status": "Delayed"
+                    },
+                    "passengers": [
+                        {
+                            "first_name": "John",
+                            "last_name": "Doe",
+                            "voucher": {
+                                "unique_voucher_code": "Voucher123",
+                                "expiry_date": "2023-07-31",
+                                "voucher_value": 50.00
+                            }
+                        },
+                        {
+                            "first_name": "Jane",
+                            "last_name": "Doe",
+                            "voucher": {
+                                "unique_voucher_code": None,
+                                "expiry_date": None,
+                                "voucher_value": None
+                            }
+                        }
+                    ]
                 }
-            ]
+            }
         }
     }
 
