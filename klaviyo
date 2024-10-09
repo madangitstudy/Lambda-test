@@ -28,6 +28,7 @@ def lambda_handler(event, context):
                         {
                             "first_name": "John",
                             "last_name": "Doe",
+                            "passenger_type": "adult",  # Added passenger type
                             "voucher": {
                                 "expiry_date": "2023-07-31",
                                 "unique_voucher_code": "Voucher123",
@@ -37,6 +38,7 @@ def lambda_handler(event, context):
                         {
                             "first_name": "Jane",
                             "last_name": "Doe",
+                            "passenger_type": "child",  # Added passenger type
                             "voucher": {
                                 "expiry_date": None,
                                 "unique_voucher_code": None,
