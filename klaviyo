@@ -2,15 +2,31 @@ import json
 import urllib.request
 
 def lambda_handler(event, context):
-    # Set API endpoint and endpoint token
+    # Set API endpoint
     api_endpoint = "https://a.klaviyo.com/api/events/"
-    endpoint_token = "Klaviyo-API-Key pk_8211f01bb2506425691699a26524fc4dbb"  # Your Klaviyo API key
+    endpoint_token = "Klaviyo-API-Key pk_8211f01bb2506425691699a26524fc4dbb"  # Ensure this is the correct key
 
     # Prepare the data payload
     payload = {
         "data": {
             "type": "event",
             "attributes": {
+                "profile": {
+                    "data": {
+                        "type": "profile",
+                        "attributes": {
+                            "email": "john.doe@example.com"  # Updated email field
+                        }
+                    }
+                },
+                "metric": {
+                    "data": {
+                        "type": "metric",
+                        "attributes": {
+                            "name": "OTPG voucher_email"  # Event name
+                        }
+                    }
+                },
                 "properties": {
                     "flight_details": {
                         "actual_arrival_time": "2023-07-26T13:00:00",
@@ -28,7 +44,7 @@ def lambda_handler(event, context):
                         {
                             "first_name": "John",
                             "last_name": "Doe",
-                            "passenger_type": "adult",  # Added passenger type
+                            "passenger_type": "adult",
                             "voucher": {
                                 "expiry_date": "2023-07-31",
                                 "unique_voucher_code": "Voucher123",
@@ -38,7 +54,7 @@ def lambda_handler(event, context):
                         {
                             "first_name": "Jane",
                             "last_name": "Doe",
-                            "passenger_type": "child",  # Added passenger type
+                            "passenger_type": "child",
                             "voucher": {
                                 "expiry_date": None,
                                 "unique_voucher_code": None,
@@ -46,24 +62,6 @@ def lambda_handler(event, context):
                             }
                         }
                     ]
-                },
-                "metric": {
-                    "data": {
-                        "type": "metric",
-                        "attributes": {
-                            "name": "OTPG voucher_email"  # Add the event name here
-                        }
-                    }
-                },
-                "profile": {
-                    "data": {
-                        "type": "profile",
-                        "attributes": {
-                            "properties": {
-                                "$email": "john.doe@example.com"  # Primary email (mandatory field)
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -74,7 +72,7 @@ def lambda_handler(event, context):
 
     # Create request
     req = urllib.request.Request(api_endpoint, data=json_payload, method="POST")
-    req.add_header("Klaviyo-API-Key", endpoint_token)  # Use Klaviyo-API-Key instead of Bearer
+    req.add_header("Authorization", endpoint_token)  # Use "Authorization" header
     req.add_header("Content-Type", "application/json")
 
     try:
