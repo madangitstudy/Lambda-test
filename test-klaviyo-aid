@@ -11,12 +11,11 @@ def lambda_handler(event, context):
         "data": {
             "type": "event",  # Specify the type of object
             "attributes": {
-                "event": "OTPG voucher_email",
-                "profile": {  # Wrap profile data in the required structure
+                "metric": {
                     "data": {
-                        "type": "profile",  # Specify the type
+                        "type": "metric",
                         "attributes": {
-                            "$email": "john.doe@example.com"  # Primary email (mandatory field)
+                            "name": "OTPG voucher_email"  # Specify the event name correctly
                         }
                     }
                 },
@@ -53,6 +52,14 @@ def lambda_handler(event, context):
                             }
                         }
                     ]
+                },
+                "profile": {
+                    "data": {
+                        "type": "profile",
+                        "attributes": {
+                            "email": "john.doe@example.com"  # Use 'email' instead of '$email'
+                        }
+                    }
                 }
             }
         }
