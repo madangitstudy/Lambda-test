@@ -6,14 +6,19 @@ def lambda_handler(event, context):
     api_endpoint = "https://a.klaviyo.com/api/events/"
     endpoint_token = "pk_8211f01bb2506425691699a26524fc4dbb"  # Your Klaviyo API key
 
-    # Prepare the data payload (using 'profile' instead of 'customer_properties')
+    # Prepare the data payload
     payload = {
         "data": {
             "type": "event",  # Specify the type of object
             "attributes": {
                 "event": "OTPG voucher_email",
-                "profile": {
-                    "$email": "john.doe@example.com"  # Primary email (mandatory field)
+                "profile": {  # Wrap profile data in the required structure
+                    "data": {
+                        "type": "profile",  # Specify the type
+                        "attributes": {
+                            "$email": "john.doe@example.com"  # Primary email (mandatory field)
+                        }
+                    }
                 },
                 "properties": {
                     "flight_details": {
