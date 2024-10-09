@@ -1,10 +1,16 @@
-import requests
+import json
+import urllib.request
 import datetime
 
-def generate_voucher(pnr, first_name, last_name):
+def generate_voucher(pnr, first_name, last_name, api_key):
     # Set API endpoint and headers
     endpoint = "https://intelisystraining.ca/vouchers/Generate"
-    headers = {"Content-Type": "application/json"}
+    
+    # Include the API key in the headers
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": api_key  # Add your API key here
+    }
 
     # Set voucher details
     voucher_value = 60
@@ -30,21 +36,47 @@ def generate_voucher(pnr, first_name, last_name):
         }
     }
 
-    # Send API request
-    response = requests.post(endpoint, headers=headers, json=body)
+    # Convert body to JSON string and encode it to bytes
+    data = json.dumps(body).encode('utf-8')
 
-    # Check if API request was successful
-    if response.status_code == 201:
-        # Return generated voucher
-        return response.json()["voucher"]
-    else:
-        # Return error message
-        return {"error": "Failed to generate voucher"}
+    # Create a request object with the headers (including the API key)
+    req = urllib.request.Request(endpoint, data=data, headers=headers)
 
-# Example usage:
-pnr = "ABC123"
-first_name = "John"
-last_name = "Doe"
+    try:
+        # Send the request and capture the response
+        with urllib.request.urlopen(req) as response:
+            # Read the response and decode it
+            response_data = response.read().decode('utf-8')
+            # Parse the JSON response
+            result = json.loads(response_data)
 
-voucher = generate_voucher(pnr, first_name, last_name)
-print(voucher)
+            # Check for voucher in the response
+            if response.status == 201:
+                return result.get("voucher", "Voucher details missing in response")
+            else:
+                return {"error": f"Unexpected response code: {response.status}"}
+    except urllib.error.HTTPError as e:
+        # Handle HTTP errors
+        return {"error": f"HTTPError: {e.code} {e.reason}"}
+    except urllib.error.URLError as e:
+        # Handle URL errors
+        return {"error": f"URLError: {e.reason}"}
+
+# Step 3: Load the JSON file and test the function
+def test_voucher_from_json(file_path):
+    # Load data from the JSON file
+    with open(file_path, 'r') as f:
+        data = json.load(f)
+
+    # Extract values from the loaded JSON data
+    pnr = data["pnr"]
+    first_name = data["first_name"]
+    last_name = data["last_name"]
+    api_key = data["api_key"]
+
+    # Call the generate_voucher function with the loaded data
+    voucher = generate_voucher(pnr, first_name, last_name, api_key)
+    print(voucher)
+
+# Example usage: Test with 'voucher_data.json'
+test_voucher_from_json('voucher_data.json')
