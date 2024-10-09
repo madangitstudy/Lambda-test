@@ -1,1 +1,26 @@
 Next steps: # Endpoint from intellysis From API on eligibility for all with TRUE for OTPG, create a voucher API for generating voucher: [amelia API Documentation - Vouchers API - POST vouchers/Generate?fields={fields} (intelisystraining.ca)|https://flairair-api.intelisystraining.ca/RESTv1/Help/Api/POST-vouchers-Generate_fields] Details to pass: # Passenger first name # Passenger last name # Expiry date # Booking Window # Value of voucher # PNR
+
+
+########################################
+{
+  "voucherType": {
+    "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
+    "key": "aƒJj2ImKybdP8tQcem2rUrd3sa66LEFx¥BLJTdx9on4",
+    "name": "Late Arrival"
+  },
+  "generationNumber": 20,
+  "password": null,
+  "personalIdentificationNumber": null,
+  "autoGeneratePersonalIdentificationNumber": {
+    "length": 4
+  },
+  "autoGeneratePassword": {
+    "length": 6
+  },
+  "expiryDate": "2024-11-08T08:41:21.8208243Z",
+  "available": 20,
+  "reason": "Sample reason for generating this voucher"
+}
+
+###############################
+
