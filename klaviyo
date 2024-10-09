@@ -5,6 +5,7 @@ def lambda_handler(event, context):
     # Set API endpoint
     api_endpoint = "https://a.klaviyo.com/api/events/"
     endpoint_token = "Klaviyo-API-Key pk_8211f01bb2506425691699a26524fc4dbb"  # Ensure this is the correct key
+    revision_date = "2023-10-10"  # Set the required revision date
 
     # Prepare the data payload
     payload = {
@@ -74,6 +75,7 @@ def lambda_handler(event, context):
     req = urllib.request.Request(api_endpoint, data=json_payload, method="POST")
     req.add_header("Authorization", endpoint_token)  # Use "Authorization" header
     req.add_header("Content-Type", "application/json")
+    req.add_header("REVISION", revision_date)  # Add the required REVISION header
 
     try:
         # Send the request
