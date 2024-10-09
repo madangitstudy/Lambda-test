@@ -62,21 +62,11 @@ def generate_voucher(pnr, first_name, last_name, api_key):
         # Handle URL errors
         return {"error": f"URLError: {e.reason}"}
 
-# Step 3: Load the JSON file and test the function
-def test_voucher_from_json(file_path):
-    # Load data from the JSON file
-    with open(file_path, 'r') as f:
-        data = json.load(f)
+# Example usage:
+pnr = "ABC123"
+first_name = "John"
+last_name = "Doe"
+api_key = "your-api-key-here"  # Replace with your actual API key
 
-    # Extract values from the loaded JSON data
-    pnr = data["pnr"]
-    first_name = data["first_name"]
-    last_name = data["last_name"]
-    api_key = data["api_key"]
-
-    # Call the generate_voucher function with the loaded data
-    voucher = generate_voucher(pnr, first_name, last_name, api_key)
-    print(voucher)
-
-# Example usage: Test with 'voucher_data.json'
-test_voucher_from_json('voucher_data.json')
+voucher = generate_voucher(pnr, first_name, last_name, api_key)
+print(voucher)
