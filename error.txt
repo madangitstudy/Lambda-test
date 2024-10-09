@@ -1,16 +1,17 @@
 {
-    "errors": [
-        {
-            "id": "481c30b6-845a-48d7-b869-3112bfa1403e",
-            "status": 400,
-            "code": "invalid",
-            "title": "Invalid input.",
-            "detail": "An object with data is required",
-            "source": {
-                "pointer": "/data"
+    "data": {
+        "type": "event",
+        "attributes": {
+            "event": "OTPG voucher_email",
+            "customer_properties": {
+                "$email": "john.doe@example.com"
             },
-            "links": {},
-            "meta": {}
-        }
-    ]
-}
+            "properties": {
+                "flight_details": {
+                    "departure_city": "New York",
+                    "departure_airport_code": "JFK",
+                    "arrival_city": "Los Angeles",
+                    "arrival_airport_code": "LAX",
+                    "expected_arrival_time": "2023-07-26T12:00:00",
+                    "actual_arrival_time": "2023-07-26T13:00:00",
+                    "time_length_of_delay": 60,
