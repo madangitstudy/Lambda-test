@@ -55,6 +55,7 @@ def lambda_handler(event, context):
     req = urllib.request.Request(api_endpoint, data=json_payload, method="POST")
     req.add_header("Authorization", f"Klaviyo-API-Key {endpoint_token}")  # Corrected Authorization header
     req.add_header("Content-Type", "application/json")
+    req.add_header("REVISION", "2024-07-15")  # Add the required REVISION header
 
     try:
         # Send the request
