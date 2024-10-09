@@ -3,6 +3,6 @@ test
 
 Response
 {
-  "statusCode": 400,
-  "body": "{\"errors\":[{\"id\":\"bde9922a-330f-41dc-9072-cf3e8720005b\",\"status\":400,\"code\":\"invalid\",\"title\":\"Invalid input.\",\"detail\":\"'$email' is not a valid field for the resource 'profile'.\",\"source\":{\"pointer\":\"/data/attributes/$email\"},\"links\":{},\"meta\":{}}]}"
+  "statusCode": 200,
+  "body": ""
 }
