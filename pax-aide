@@ -1,0 +1,50 @@
+import requests
+import datetime
+
+def generate_voucher(pnr, first_name, last_name):
+    # Set API endpoint and headers
+    endpoint = "https://intelisystraining.ca/vouchers/Generate"
+    headers = {"Content-Type": "application/json"}
+
+    # Set voucher details
+    voucher_value = 60
+    voucher_currency = "CAD"
+    voucher_expiration_date = (datetime.datetime.now() + datetime.timedelta(days=30)).strftime("%Y-%m-%d")
+    voucher_applicable_to = "base_fare"
+
+    # Set eligibility details
+    voucher_eligibility = {
+        "pnr": pnr,
+        "passenger_first_name": first_name,
+        "passenger_last_name": last_name
+    }
+
+    # Set request body
+    body = {
+        "fields": {
+            "voucher_value": voucher_value,
+            "voucher_currency": voucher_currency,
+            "voucher_expiration_date": voucher_expiration_date,
+            "voucher_applicable_to": voucher_applicable_to,
+            "voucher_eligibility": voucher_eligibility
+        }
+    }
+
+    # Send API request
+    response = requests.post(endpoint, headers=headers, json=body)
+
+    # Check if API request was successful
+    if response.status_code == 201:
+        # Return generated voucher
+        return response.json()["voucher"]
+    else:
+        # Return error message
+        return {"error": "Failed to generate voucher"}
+
+# Example usage:
+pnr = "ABC123"
+first_name = "John"
+last_name = "Doe"
+
+voucher = generate_voucher(pnr, first_name, last_name)
+print(voucher)
