@@ -1,11 +1,11 @@
 {
     "errors": [
         {
-            "id": "d0dcf034-31d1-4682-b701-b65552f17aa1",
-            "status": 401,
-            "code": "not_authenticated",
-            "title": "Authentication credentials were not provided.",
-            "detail": "Authentication credentials were not provided.",
+            "id": "2e87eff8-1e26-4560-a21b-f2d482813731",
+            "status": 400,
+            "code": "invalid_revision",
+            "title": "'REVISION' is a required header and must be of the format YYYY-MM-DD",
+            "detail": "'REVISION' is a required header and must be of the format YYYY-MM-DD",
             "source": {
                 "pointer": "/data/"
             }
