@@ -1,8 +1,8 @@
 Test Event Name
-test
+testv1
 
 Response
 {
-  "statusCode": 200,
-  "body": ""
+  "statusCode": 401,
+  "body": "{\"errors\":[{\"id\":\"bc66c758-5050-429f-ae84-997a71743bca\",\"status\":401,\"code\":\"not_authenticated\",\"title\":\"Authentication credentials were not provided.\",\"detail\":\"Authentication credentials were not provided.\",\"source\":{\"pointer\":\"/data/\"}}]}"
 }
