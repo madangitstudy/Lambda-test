@@ -1,81 +1,9 @@
-import json
-import requests
-from datetime import datetime, timedelta
+Test Event Name
+test1
 
-# Intellysis API URL for checking OTPG eligibility
-INTELLYSIS_API_URL = "https://intellysis-api-url.com/eligibility"
-# Amelia API URL for generating vouchers
-AMELIA_API_URL = "https://intelisystraining.ca/vouchers/Generate"
-
-# Lambda function handler
-def lambda_handler(event, context):
-    # Check if 'eligiblePassengers' is provided in the event
-    if 'eligiblePassengers' in event:
-        eligible_passengers = event['eligiblePassengers']
-    else:
-        # If not provided, fetch eligible passengers from the Intellysis API
-        eligible_passengers = check_eligibility()
-    
-    if not eligible_passengers:
-        return {
-            'statusCode': 200,
-            'body': json.dumps('No eligible passengers found.')
-        }
-    
-    # For each eligible passenger, generate a voucher
-    vouchers = []
-    for passenger in eligible_passengers:
-        voucher = generate_voucher(passenger)
-        if voucher:
-            vouchers.append(voucher)
-    
-    # Return the list of generated vouchers
-    return {
-        'statusCode': 200,
-        'body': json.dumps({
-            'generatedVouchers': vouchers
-        })
-    }
-
-# Function to check OTPG eligibility via Intellysis API
-def check_eligibility():
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer YOUR_INTELLYSIS_API_KEY'
-    }
-    response = requests.get(INTELLYSIS_API_URL, headers=headers)
-    
-    if response.status_code == 200:
-        # Parse the eligible passengers data (assuming response is in JSON format)
-        return response.json().get('eligiblePassengers', [])
-    else:
-        # Fixed the f-string here for correct output
-        print(f"Failed to fetch eligibility: {response.status_code}")
-        return []
-
-# Function to generate voucher via Amelia API
-def generate_voucher(passenger):
-    # Prepare the request payload for Amelia API
-    payload = {
-        "passengerFirstName": passenger["firstName"],
-        "passengerLastName": passenger["lastName"],
-        "expiryDate": (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d"),
-        "bookingWindow": "None",
-        "voucherValue": "60 CAD",
-        "pnr": passenger["pnr"]
-    }
-    
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer YOUR_AMELIA_API_KEY'
-    }
-    
-    # Make a POST request to generate a voucher
-    response = requests.post(AMELIA_API_URL, headers=headers, json=payload)
-    
-    if response.status_code == 201:
-        # Voucher created successfully
-        return response.json()
-    else:
-        print(f"Error generating voucher for {passenger['firstName']} {passenger['lastName']}: {response.status_code}")
-        return None
+Response
+{
+  "errorMessage": "Unable to import module 'lambda_function': No module named 'requests'",
+  "errorType": "Runtime.ImportModuleError",
+  "requestId": "",
+  "stackTrace": []
