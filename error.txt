@@ -1,7 +1,31 @@
-curl --request POST \
-     --url 'https://a.klaviyo.com/api/v2/lists?api_key=PRIVATE_KEY' \
-     --header 'Accept: application/json' \
-     --header 'Content-Type: application/x-www-form-urlencoded' \
-     --data list_name=ListName
+import requests
 
-###########################
+url = "https://a.klaviyo.com/api/events/"
+
+payload = { "data": {
+        "type": "event",
+        "attributes": {
+            "properties": { "newKey": "New Value" },
+            "metric": { "data": { "type": "metric" } },
+            "profile": { "data": {
+                    "type": "profile",
+                    "attributes": {
+                        "properties": { "newKey": "New Value" },
+                        "meta": { "patch_properties": {
+                                "append": { "newKey": "New Value" },
+                                "unappend": { "newKey": "New Value" }
+                            } }
+                    }
+                } }
+        }
+    } }
+headers = {
+    "accept": "application/json",
+    "revision": "2024-07-15",
+    "content-type": "application/json",
+    "Authorization": "Klaviyo-API-Key your-private-api-key"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+
+print(response.text)
