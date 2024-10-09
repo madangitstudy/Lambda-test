@@ -2,17 +2,17 @@ import json
 import urllib.request
 
 def lambda_handler(event, context):
-    # Set API endpoint and endpoint token
+    # Set API endpoint and API token
     api_endpoint = "https://a.klaviyo.com/api/events/"
     endpoint_token = "pk_8211f01bb2506425691699a26524fc4dbb"  # Your Klaviyo API key
 
-    # Prepare the data payload (wrapped inside "data")
+    # Prepare the data payload (using 'profile' instead of 'customer_properties')
     payload = {
         "data": {
             "type": "event",  # Specify the type of object
             "attributes": {
                 "event": "OTPG voucher_email",
-                "customer_properties": {
+                "profile": {
                     "$email": "john.doe@example.com"  # Primary email (mandatory field)
                 },
                 "properties": {
@@ -58,9 +58,9 @@ def lambda_handler(event, context):
 
     # Create request
     req = urllib.request.Request(api_endpoint, data=json_payload, method="POST")
-    req.add_header("Authorization", f"Klaviyo-API-Key {endpoint_token}")  # Corrected Authorization header
+    req.add_header("Authorization", f"Klaviyo-API-Key {endpoint_token}")
     req.add_header("Content-Type", "application/json")
-    req.add_header("REVISION", "2024-07-15")  # Add the required REVISION header
+    req.add_header("REVISION", "2024-07-15")
 
     try:
         # Send the request
