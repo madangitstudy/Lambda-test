@@ -1,6 +1,10 @@
+Test Event Name
+test-pax
+
+Response
 {
-  "pnr": "ABC123",
-  "first_name": "John",
-  "last_name": "Doe",
-  "api_key": "your-api-key-here"
+  "errorMessage": "Unable to import module 'lambda_function': No module named 'requests'",
+  "errorType": "Runtime.ImportModuleError",
+  "requestId": "",
+  "stackTrace": []
 }
