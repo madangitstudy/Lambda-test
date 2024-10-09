@@ -3,6 +3,6 @@ testv1
 
 Response
 {
-  "statusCode": 401,
-  "body": "{\"errors\":[{\"id\":\"bc66c758-5050-429f-ae84-997a71743bca\",\"status\":401,\"code\":\"not_authenticated\",\"title\":\"Authentication credentials were not provided.\",\"detail\":\"Authentication credentials were not provided.\",\"source\":{\"pointer\":\"/data/\"}}]}"
+  "statusCode": 400,
+  "body": "{\"errors\":[{\"id\":\"1360f8ae-1880-4a28-a352-02afd20c7097\",\"status\":400,\"code\":\"invalid_revision\",\"title\":\"'REVISION' is a required header and must be of the format YYYY-MM-DD\",\"detail\":\"'REVISION' is a required header and must be of the format YYYY-MM-DD\",\"source\":{\"pointer\":\"/data/\"}}]}"
 }
