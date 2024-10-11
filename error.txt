@@ -1,27 +1,12 @@
-def generate_voucher(pnr, first_name, last_name):
-    api_endpoint = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
-    api_key = "your_api_key_here"  # Ensure this is a valid API key
+est Event Name
+Voucher-test
 
-    print(f"Generating voucher for: PNR: {pnr}, First Name: {first_name}, Last Name: {last_name}")
-
-    # Request body setup...
-    request_data = json.dumps(request_body).encode('utf-8')
-
-    headers = {
-        "Authorization": f"Bearer {api_key}",  # Ensure it's formatted correctly
-        "Content-Type": "application/json; charset=UTF-8"
-    }
-
-    req = urllib.request.Request(api_endpoint, data=request_data, headers=headers)
-
-    try:
-        with urllib.request.urlopen(req) as response:
-            response_data = response.read().decode('utf-8')
-            print("Voucher generated successfully")
-            return json.loads(response_data)
-    except urllib.error.HTTPError as e:
-        print(f"HTTP error: {e.code} - {e.reason}")
-    except urllib.error.URLError as e:
-        print(f"URL error: {e.reason}")
-    except Exception as e:
-        print(f"Unexpected error: {str(e)}")
+Response
+{
+  "errorMessage": "Syntax error in module 'lambda_function': unmatched '}' (lambda_function.py, line 32)",
+  "errorType": "Runtime.UserCodeSyntaxError",
+  "requestId": "",
+  "stackTrace": [
+    "  File \"/var/task/lambda_function.py\" Line 32\n            }"
+  ]
+}
