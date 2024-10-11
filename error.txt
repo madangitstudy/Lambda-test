@@ -1,27 +1,3 @@
-import json
-import urllib.request
-import datetime
-
-def lambda_handler(event, context):
-    # Extract parameters from the event
-    pnr = event.get('pnr')
-    first_name = event.get('first_name')
-    last_name = event.get('last_name')
-
-    if not pnr or not first_name or not last_name:
-        return {
-            'statusCode': 400,
-            'body': json.dumps('Missing parameters')
-        }
-
-    # Generate the voucher
-    voucher_response = generate_voucher(pnr, first_name, last_name)
-    
-    return {
-        'statusCode': 200,
-        'body': json.dumps(voucher_response)
-    }
-
 def generate_voucher(pnr, first_name, last_name):
     api_endpoint = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
     api_key = "your_api_key_here"  # Replace with your actual API key
@@ -53,10 +29,10 @@ def generate_voucher(pnr, first_name, last_name):
 
     req = urllib.request.Request(
         url=api_endpoint,
-        data=json.dumps(request_body).encode('utf-8'),
+        data=json.dumps(request_body).encode('utf-8'),  # Ensure it's UTF-8 encoded
         headers={
             "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json; charset=utf-8"  # Specify UTF-8 in Content-Type
         }
     )
 
