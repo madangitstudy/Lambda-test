@@ -1,3 +1,4 @@
+url used -https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields
 {
   "fields": {
     "type": "voucher",
@@ -13,4 +14,9 @@
       "pnr": "ABC123"
     }
   }
+}
+
+getting error while running in postman
+{
+    "message": "VoucherType key is required."
 }
