@@ -2,7 +2,7 @@
   "fields": {
     "type": "voucher",
     "fields": {
-      "VoucherType": "aaddddcdkygfgkirt",  // Replace with your specific voucher type key
+      "VoucherType": "aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8=",
       "name": {
         "first_name": "John",
         "last_name": "Doe"
