@@ -3,8 +3,10 @@ Voucher-test
 
 Response
 {
-  "errorMessage": "Unable to import module 'lambda_function': No module named 'lambda_function'",
-  "errorType": "Runtime.ImportModuleError",
-  "requestId": "",
-  "stackTrace": []
+  "errorMessage": "'pnr'",
+  "errorType": "KeyError",
+  "requestId": "7957ecff-3f75-4f1e-b416-52b87d62ea69",
+  "stackTrace": [
+    "  File \"/var/task/lambda_function.py\", line 64, in lambda_handler\n    pnr = event['pnr']\n"
+  ]
 }
