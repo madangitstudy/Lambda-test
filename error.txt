@@ -1,89 +1,10 @@
-import urllib.request
-import json
-import boto3
-import datetime
+Test Event Name
+Voucher-test
 
-def generate_voucher(pnr, first_name, last_name):
-    # Set API endpoint and credentials
-    api_endpoint = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
-    api_key = "aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8="
-
-    # Set voucher details
-    expiry_date = (datetime.date.today() + datetime.timedelta(days=30)).strftime("%Y-%m-%dT00:00:00")
-    voucher_value = 60.0
-    currency = "CAD"
-    applicable_to = "base_fare"
-
-    # Set request body
-    request_body = {
-        "fields": {
-            "type": "voucher",
-            "fields": {
-                "VoucherType": "aƒJj2ImKybdP8tQcem2rUqODpzveNdv8=",
-                "name": {
-                    "first_name": first_name,
-                    "last_name": last_name
-                },
-                "value": voucher_value,
-                "currency": currency,
-                "expiry_date": expiry_date,
-                "applicable_to": applicable_to,
-                "pnr": pnr
-            }
-        }
-    }
-
-    # Convert request body to JSON
-    json_data = json.dumps(request_body).encode('utf-8')
-
-    # Set API headers
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-
-    # Create a request object
-    req = urllib.request.Request(api_endpoint, data=json_data, headers=headers)
-
-    try:
-        # Send the request and read the response
-        with urllib.request.urlopen(req) as response:
-            response_data = response.read()
-            voucher_response = json.loads(response_data.decode('utf-8'))
-            print("Voucher generated successfully")
-            return voucher_response
-    except urllib.error.HTTPError as e:
-        print(f"HTTP Error: {e.code} - {e.reason}")
-        return None
-    except urllib.error.URLError as e:
-        print(f"URL Error: {e.reason}")
-        return None
-
-def lambda_handler(event, context):
-    # Extract parameters from the event
-    pnr = event['pnr']
-    first_name = event['first_name']
-    last_name = event['last_name']
-
-    # Generate voucher
-    voucher_response = generate_voucher(pnr, first_name, last_name)
-
-    # You can now use boto3 to store the voucher details in DynamoDB or other AWS services
-    if voucher_response:
-        dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table('Vouchers')
-        table.put_item(Item={
-            'PNR': pnr,
-            'FirstName': first_name,
-            'LastName': last_name,
-            'VoucherDetails': voucher_response
-        })
-        return {
-            'statusCode': 200,
-            'body': 'Voucher created and stored in DynamoDB'
-        }
-    else:
-        return {
-            'statusCode': 500,
-            'body': 'Error generating voucher'
-        }
+Response
+{
+  "errorMessage": "Unable to import module 'lambda_function': No module named 'lambda_function'",
+  "errorType": "Runtime.ImportModuleError",
+  "requestId": "",
+  "stackTrace": []
+}
