@@ -1,3 +1,4 @@
+import boto3
 import requests
 import datetime
 
@@ -17,6 +18,7 @@ def generate_voucher(pnr, first_name, last_name):
         "fields": {
             "type": "voucher",
             "fields": {
+                "VoucherType": "aƒJj2ImKybdP8tQcem2rUqODpzveNdv8=",  # Specific voucher type key
                 "name": {
                     "first_name": first_name,
                     "last_name": last_name
@@ -44,23 +46,35 @@ def generate_voucher(pnr, first_name, last_name):
         print("Voucher generated successfully")
         return response.json()
     else:
-        print("Error generating voucher")
+        print(f"Error generating voucher: {response.status_code} - {response.text}")
         return None
 
-# Example usage
-pnr = "ABC123"
-first_name = "John"
-last_name = "Doe"
-voucher = generate_voucher(pnr, first_name, last_name)
-print(voucher)
+def lambda_handler(event, context):
+    # Extract parameters from the event
+    pnr = event['pnr']
+    first_name = event['first_name']
+    last_name = event['last_name']
 
-running above lambda function getting error like Test Event Name
-(unsaved) test event
+    # Generate voucher
+    voucher_response = generate_voucher(pnr, first_name, last_name)
 
-Response
-{
-  "errorMessage": "Unable to import module 'lambda_function': No module named 'lambda_function'",
-  "errorType": "Runtime.ImportModuleError",
-  "requestId": "",
-  "stackTrace": []
-}
+    # You can now use boto3 to store the voucher details in DynamoDB or other AWS services
+    # For example, store the voucher in a DynamoDB table
+    if voucher_response:
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table('Vouchers')
+        table.put_item(Item={
+            'PNR': pnr,
+            'FirstName': first_name,
+            'LastName': last_name,
+            'VoucherDetails': voucher_response
+        })
+        return {
+            'statusCode': 200,
+            'body': 'Voucher created and stored in DynamoDB'
+        }
+    else:
+        return {
+            'statusCode': 500,
+            'body': 'Error generating voucher'
+        }
