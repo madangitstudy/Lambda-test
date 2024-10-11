@@ -1,15 +1,27 @@
-Test Event Name
-Voucher-test
+def generate_voucher(pnr, first_name, last_name):
+    api_endpoint = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
+    api_key = "your_api_key_here"  # Ensure this is a valid API key
 
-Response
-{
-  "statusCode": 200,
-  "body": null
-}
+    print(f"Generating voucher for: PNR: {pnr}, First Name: {first_name}, Last Name: {last_name}")
 
-Function Logs
-START RequestId: 7c5f320c-92b2-4e57-9384-215e84fa6cf5 Version: $LATEST
-Generating voucher for: PNR: ABC123, First Name: Jhon, Last Name: Doe
-HTTP error: 401 - Invalid token
-END RequestId: 7c5f320c-92b2-4e57-9384-215e84fa6cf5
-REPORT RequestId: 7c5f320c-92b2-4e57-9384-215e84fa6cf5	Duration: 1080.71 ms	Billed Duration: 1081 ms	Memory Size: 128 MB	Max Memory Used: 48 MB	Init Duration: 140.00 ms
+    # Request body setup...
+    request_data = json.dumps(request_body).encode('utf-8')
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",  # Ensure it's formatted correctly
+        "Content-Type": "application/json; charset=UTF-8"
+    }
+
+    req = urllib.request.Request(api_endpoint, data=request_data, headers=headers)
+
+    try:
+        with urllib.request.urlopen(req) as response:
+            response_data = response.read().decode('utf-8')
+            print("Voucher generated successfully")
+            return json.loads(response_data)
+    except urllib.error.HTTPError as e:
+        print(f"HTTP error: {e.code} - {e.reason}")
+    except urllib.error.URLError as e:
+        print(f"URL error: {e.reason}")
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
