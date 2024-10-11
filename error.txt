@@ -1,18 +1,72 @@
-Test Event Name
-Voucher-test
+import json
+import urllib.request
+import datetime
 
-Response
-{
-  "errorMessage": "Handler 'lambda_handler' missing on module 'lambda_function'",
-  "errorType": "Runtime.HandlerNotFound",
-  "requestId": "",
-  "stackTrace": []
-}
+def lambda_handler(event, context):
+    # Extract parameters from the event
+    pnr = event.get('pnr')
+    first_name = event.get('first_name')
+    last_name = event.get('last_name')
 
-Function Logs
-[ERROR] Runtime.HandlerNotFound: Handler 'lambda_handler' missing on module 'lambda_function'
-Traceback (most recent call last):INIT_REPORT Init Duration: 157.69 ms	Phase: init	Status: error	Error Type: Runtime.HandlerNotFound
-[ERROR] Runtime.HandlerNotFound: Handler 'lambda_handler' missing on module 'lambda_function'
-Traceback (most recent call last):INIT_REPORT Init Duration: 1590.62 ms	Phase: invoke	Status: error	Error Type: Runtime.HandlerNotFound
-START RequestId: 80413463-0127-4f77-a873-095cbb7483f6 Version: $LATEST
-END RequestId: 80413463-0127-4f77-a873-095cbb7483f6
+    if not pnr or not first_name or not last_name:
+        return {
+            'statusCode': 400,
+            'body': json.dumps('Missing parameters')
+        }
+
+    # Generate the voucher
+    voucher_response = generate_voucher(pnr, first_name, last_name)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps(voucher_response)
+    }
+
+def generate_voucher(pnr, first_name, last_name):
+    api_endpoint = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
+    api_key = "your_api_key_here"  # Replace with your actual API key
+
+    # Print inputs for debugging
+    print(f"Generating voucher for: PNR: {pnr}, First Name: {first_name}, Last Name: {last_name}")
+
+    expiry_date = (datetime.date.today() + datetime.timedelta(days=30)).strftime("%Y-%m-%dT00:00:00")
+    voucher_value = 60.0
+    currency = "CAD"
+    applicable_to = "base_fare"
+
+    request_body = {
+        "fields": {
+            "type": "voucher",
+            "fields": {
+                "name": {
+                    "first_name": first_name,
+                    "last_name": last_name
+                },
+                "value": voucher_value,
+                "currency": currency,
+                "expiry_date": expiry_date,
+                "applicable_to": applicable_to,
+                "pnr": pnr
+            }
+        }
+    }
+
+    req = urllib.request.Request(
+        url=api_endpoint,
+        data=json.dumps(request_body).encode('utf-8'),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+    )
+
+    try:
+        with urllib.request.urlopen(req) as response:
+            response_data = response.read()
+            return json.loads(response_data)
+    except urllib.error.HTTPError as e:
+        print(f"HTTP error: {e.code} - {e.reason}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return None
