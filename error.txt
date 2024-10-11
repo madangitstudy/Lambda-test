@@ -1,22 +1,72 @@
-Test Event Name
-Voucher-test
+import json
+import urllib.request
+import datetime
 
-Response
-{
-  "errorMessage": "'latin-1' codec can't encode character '\\u0192' in position 8: ordinal not in range(256)",
-  "errorType": "UnicodeEncodeError",
-  "requestId": "66b6da8a-1b2e-4fad-b024-0cf5680ad75c",
-  "stackTrace": [
-    "  File \"/var/task/lambda_function.py\", line 66, in lambda_handler\n    voucher_response = generate_voucher(pnr, first_name, last_name)\n",
-    "  File \"/var/task/lambda_function.py\", line 44, in generate_voucher\n    with urllib.request.urlopen(req) as response:\n",
-    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 215, in urlopen\n    return opener.open(url, data, timeout)\n",
-    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 515, in open\n    response = self._open(req, data)\n",
-    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 532, in _open\n    result = self._call_chain(self.handle_open, protocol, protocol +\n",
-    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 492, in _call_chain\n    result = func(*args)\n",
-    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 1392, in https_open\n    return self.do_open(http.client.HTTPSConnection, req,\n",
-    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 1344, in do_open\n    h.request(req.get_method(), req.selector, req.data, headers,\n",
-    "  File \"/var/lang/lib/python3.12/http/client.py\", line 1336, in request\n    self._send_request(method, url, body, headers, encode_chunked)\n",
-    "  File \"/var/lang/lib/python3.12/http/client.py\", line 1377, in _send_request\n    self.putheader(hdr, value)\n",
-    "  File \"/var/lang/lib/python3.12/http/client.py\", line 1309, in putheader\n    values[i] = one_value.encode('latin-1')\n"
-  ]
-}
+def generate_voucher(pnr, first_name, last_name):
+    # Set API endpoint and credentials
+    api_endpoint = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
+    api_key = "aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8="  # Ensure this is valid
+
+    # Set request body
+    expiry_date = (datetime.date.today() + datetime.timedelta(days=30)).strftime("%Y-%m-%dT00:00:00")
+    request_body = {
+        "fields": {
+            "type": "voucher",
+            "fields": {
+                "VoucherType": "your_voucher_type",  # Replace with your valid voucher type
+                "name": {
+                    "first_name": first_name,
+                    "last_name": last_name
+                },
+                "value": 60.0,
+                "currency": "CAD",
+                "expiry_date": expiry_date,
+                "applicable_to": "base_fare",
+                "pnr": pnr
+            }
+        }
+    }
+
+    # Convert request body to JSON string and encode in UTF-8
+    request_data = json.dumps(request_body).encode('utf-8')
+
+    # Set API headers
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json; charset=UTF-8"  # Specify UTF-8
+    }
+
+    # Create the request
+    req = urllib.request.Request(api_endpoint, data=request_data, headers=headers)
+
+    # Send API request
+    try:
+        with urllib.request.urlopen(req) as response:
+            response_data = response.read().decode('utf-8')
+            print("Voucher generated successfully")
+            return json.loads(response_data)
+    except urllib.error.HTTPError as e:
+        print(f"HTTP error: {e.code} - {e.reason}")
+    except urllib.error.URLError as e:
+        print(f"URL error: {e.reason}")
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+
+def lambda_handler(event, context):
+    # Extract parameters from the event
+    pnr = event.get('pnr')  # Use .get() to avoid KeyError
+    first_name = event.get('first_name')
+    last_name = event.get('last_name')
+
+    if not pnr or not first_name or not last_name:
+        return {
+            'statusCode': 400,
+            'body': 'Missing required parameters: pnr, first_name, last_name'
+        }
+
+    # Proceed with voucher generation
+    voucher_response = generate_voucher(pnr, first_name, last_name)
+    return {
+        'statusCode': 200,
+        'body': voucher_response
+    }
