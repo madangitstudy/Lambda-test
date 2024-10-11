@@ -1,98 +1,16 @@
-import json
-import urllib.request
-
-def lambda_handler(event, context):
-    # Set API endpoint
-    api_endpoint = "https://a.klaviyo.com/api/events/"
-    endpoint_token = "Klaviyo-API-Key pk_ee94fe935ac84c0358781078409fb75042"  # Ensure this is the correct key
-    revision_date = "2023-10-10"  # Set the required revision date
-
-    # Prepare the data payload
-    payload = {
-        "data": {
-            "type": "event",
-            "attributes": {
-                "profile": {
-                    "data": {
-                        "type": "profile",
-                        "attributes": {
-                            "email": "dylanreeveswasik@gmail.com"  # Updated email field
-                        }
-                    }
-                },
-                "metric": {
-                    "data": {
-                        "type": "metric",
-                        "attributes": {
-                            "name": "OTPG voucher_email"  # Event name
-                        }
-                    }
-                },
-                "properties": {
-                    "flight_details": {
-                        "actual_arrival_time": "2023-07-26T13:00:00",
-                        "arrival_airport_code": "LAX",
-                        "arrival_city": "Los Angeles",
-                        "departure_airport_code": "JFK",
-                        "departure_city": "New York",
-                        "expected_arrival_time": "2023-07-26T12:00:00",
-                        "flight_number": "AA101",
-                        "flight_status": "Delayed",
-                        "pnr_booking_id": "ABC123",
-                        "time_length_of_delay": 60
-                    },
-                    "passengers": [
-                        {
-                            "first_name": "John",
-                            "last_name": "Doe",
-                            "passenger_type": "adult",
-                            "voucher": {
-                                "expiry_date": "2023-07-31",
-                                "unique_voucher_code": "Voucher123",
-                                "voucher_value": 50
-                            }
-                        },
-                        {
-                            "first_name": "Jane",
-                            "last_name": "Doe",
-                            "passenger_type": "child",
-                            "voucher": {
-                                "expiry_date": None,
-                                "unique_voucher_code": None,
-                                "voucher_value": None
-                            }
-                        }
-                    ]
-                }
-            }
-        }
+{
+  "fields": {
+    "type": "voucher",
+    "fields": {
+      "name": {
+        "first_name": "John",
+        "last_name": "Doe"
+      },
+      "value": 60.0,
+      "currency": "CAD",
+      "expiry_date": "2024-08-26T00:00:00",
+      "applicable_to": "base_fare",
+      "pnr": "ABC123"
     }
-
-    # Convert payload to JSON
-    json_payload = json.dumps(payload).encode('utf-8')
-
-    # Create request
-    req = urllib.request.Request(api_endpoint, data=json_payload, method="POST")
-    req.add_header("Authorization", endpoint_token)  # Use "Authorization" header
-    req.add_header("Content-Type", "application/json")
-    req.add_header("REVISION", revision_date)  # Add the required REVISION header
-
-    try:
-        # Send the request
-        with urllib.request.urlopen(req) as response:
-            response_body = response.read()
-            return {
-                "statusCode": 200,
-                "body": response_body.decode('utf-8')
-            }
-    except urllib.error.HTTPError as e:
-        error_message = e.read().decode('utf-8')
-        return {
-            "statusCode": e.code,
-            "body": error_message
-        }
-    except Exception as e:
-        return {
-            "statusCode": 500,
-            "body": f"Internal server error: {str(e)}"
-        }
+  }
+}
