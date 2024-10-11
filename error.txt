@@ -1,58 +1,18 @@
-import urllib.request
-import json
-import datetime
+Test Event Name
+Voucher-test
 
-def generate_voucher(pnr, first_name, last_name):
-    # Set API endpoint and credentials
-    api_endpoint = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
-    api_key = "your_api_key_here"  # Replace with your actual API key
+Response
+{
+  "errorMessage": "Handler 'lambda_handler' missing on module 'lambda_function'",
+  "errorType": "Runtime.HandlerNotFound",
+  "requestId": "",
+  "stackTrace": []
+}
 
-    # Print inputs for debugging
-    print(f"Generating voucher for: PNR: {pnr}, First Name: {first_name}, Last Name: {last_name}")
-
-    # Set voucher details
-    expiry_date = (datetime.date.today() + datetime.timedelta(days=30)).strftime("%Y-%m-%dT00:00:00")
-    voucher_value = 60.0
-    currency = "CAD"
-    applicable_to = "base_fare"
-
-    # Set request body
-    request_body = {
-        "fields": {
-            "type": "voucher",
-            "fields": {
-                "name": {
-                    "first_name": first_name,
-                    "last_name": last_name
-                },
-                "value": voucher_value,
-                "currency": currency,
-                "expiry_date": expiry_date,
-                "applicable_to": applicable_to,
-                "pnr": pnr
-            }
-        }
-    }
-
-    # Set up the request
-    req = urllib.request.Request(
-        url=api_endpoint,
-        data=json.dumps(request_body).encode('utf-8'),  # Ensure UTF-8 encoding
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-    )
-
-    try:
-        # Send the request
-        with urllib.request.urlopen(req) as response:
-            response_data = response.read()
-            return json.loads(response_data)
-    except urllib.error.HTTPError as e:
-        print(f"HTTP error: {e.code} - {e.reason}")
-        return None
-    except Exception as e:
-        print(f"Unexpected error: {str(e)}")
-        return None
-
+Function Logs
+[ERROR] Runtime.HandlerNotFound: Handler 'lambda_handler' missing on module 'lambda_function'
+Traceback (most recent call last):INIT_REPORT Init Duration: 157.69 ms	Phase: init	Status: error	Error Type: Runtime.HandlerNotFound
+[ERROR] Runtime.HandlerNotFound: Handler 'lambda_handler' missing on module 'lambda_function'
+Traceback (most recent call last):INIT_REPORT Init Duration: 1590.62 ms	Phase: invoke	Status: error	Error Type: Runtime.HandlerNotFound
+START RequestId: 80413463-0127-4f77-a873-095cbb7483f6 Version: $LATEST
+END RequestId: 80413463-0127-4f77-a873-095cbb7483f6
