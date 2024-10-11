@@ -53,3 +53,14 @@ first_name = "John"
 last_name = "Doe"
 voucher = generate_voucher(pnr, first_name, last_name)
 print(voucher)
+
+running above lambda function getting error like Test Event Name
+(unsaved) test event
+
+Response
+{
+  "errorMessage": "Unable to import module 'lambda_function': No module named 'lambda_function'",
+  "errorType": "Runtime.ImportModuleError",
+  "requestId": "",
+  "stackTrace": []
+}
