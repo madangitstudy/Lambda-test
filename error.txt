@@ -1,12 +1,16 @@
-est Event Name
-Voucher-test
-
-Response
-{
-  "errorMessage": "Syntax error in module 'lambda_function': unmatched '}' (lambda_function.py, line 32)",
-  "errorType": "Runtime.UserCodeSyntaxError",
-  "requestId": "",
-  "stackTrace": [
-    "  File \"/var/task/lambda_function.py\" Line 32\n            }"
-  ]
+request_body = {
+    "fields": {
+        "type": "voucher",
+        "fields": {
+            "name": {
+                "first_name": first_name,
+                "last_name": last_name
+            },
+            "value": voucher_value,
+            "currency": currency,
+            "expiry_date": expiry_date,
+            "applicable_to": applicable_to,
+            "pnr": pnr
+        }
+    }
 }
