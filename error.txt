@@ -1,8 +1,8 @@
-url used -https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields
 {
   "fields": {
     "type": "voucher",
     "fields": {
+      "VoucherType": "aaddddcdkygfgkirt",  // Replace with your specific voucher type key
       "name": {
         "first_name": "John",
         "last_name": "Doe"
@@ -14,9 +14,4 @@ url used -https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fie
       "pnr": "ABC123"
     }
   }
-}
-
-getting error while running in postman
-{
-    "message": "VoucherType key is required."
 }
