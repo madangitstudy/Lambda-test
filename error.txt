@@ -1,17 +1,55 @@
-{
-  "fields": {
-    "type": "voucher",
-    "fields": {
-      "VoucherType": "aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8=",
-      "name": {
-        "first_name": "John",
-        "last_name": "Doe"
-      },
-      "value": 60.0,
-      "currency": "CAD",
-      "expiry_date": "2024-08-26T00:00:00",
-      "applicable_to": "base_fare",
-      "pnr": "ABC123"
+import requests
+import datetime
+
+def generate_voucher(pnr, first_name, last_name):
+    # Set API endpoint and credentials
+    api_endpoint = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
+    api_key = "aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8="
+
+    # Set voucher details
+    expiry_date = (datetime.date.today() + datetime.timedelta(days=30)).strftime("%Y-%m-%dT00:00:00")
+    voucher_value = 60.0
+    currency = "CAD"
+    applicable_to = "base_fare"
+
+    # Set request body
+    request_body = {
+        "fields": {
+            "type": "voucher",
+            "fields": {
+                "name": {
+                    "first_name": first_name,
+                    "last_name": last_name
+                },
+                "value": voucher_value,
+                "currency": currency,
+                "expiry_date": expiry_date,
+                "applicable_to": applicable_to,
+                "pnr": pnr
+            }
+        }
     }
-  }
-}
+
+    # Set API headers
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    # Send API request
+    response = requests.post(api_endpoint, json=request_body, headers=headers)
+
+    # Check API response
+    if response.status_code == 201:
+        print("Voucher generated successfully")
+        return response.json()
+    else:
+        print("Error generating voucher")
+        return None
+
+# Example usage
+pnr = "ABC123"
+first_name = "John"
+last_name = "Doe"
+voucher = generate_voucher(pnr, first_name, last_name)
+print(voucher)
