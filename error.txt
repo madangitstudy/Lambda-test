@@ -1,15 +1,50 @@
-est Event Name
-Voucher-test
+def generate_voucher(pnr, first_name, last_name):
+    # Set API endpoint and credentials
+    api_endpoint = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
+    api_key = "your_api_key_here"  # Replace with your actual API key
 
-Response
-{
-  "statusCode": 200,
-  "body": "null"
-}
+    # Set voucher details
+    expiry_date = (datetime.date.today() + datetime.timedelta(days=30)).strftime("%Y-%m-%dT00:00:00")
+    voucher_value = 60.0
+    currency = "CAD"
+    applicable_to = "base_fare"
 
-Function Logs
-START RequestId: ab773be3-342e-4e44-9b55-2efac8c3230a Version: $LATEST
-Generating voucher for: PNR: ABC123, First Name: Jhon, Last Name: Doe
-Unexpected error: 'latin-1' codec can't encode character '\u0192' in position 8: ordinal not in range(256)
-END RequestId: ab773be3-342e-4e44-9b55-2efac8c3230a
-REPORT RequestId: ab773be3-342e-4e44-9b55-2efac8c3230a	Duration: 898.40 ms	Billed Duration: 899 ms	Memory Size: 128 MB	Max Memory Used: 47 MB	Init Duration: 146.04 ms
+    # Set request body
+    request_body = {
+        "fields": {
+            "type": "voucher",
+            "fields": {
+                "name": {
+                    "first_name": first_name,
+                    "last_name": last_name
+                },
+                "value": voucher_value,
+                "currency": currency,
+                "expiry_date": expiry_date,
+                "applicable_to": applicable_to,
+                "pnr": pnr
+            }
+        }
+    }
+
+    # Set up the request
+    req = urllib.request.Request(
+        url=api_endpoint,
+        data=json.dumps(request_body).encode('utf-8'),  # Ensure UTF-8 encoding
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+    )
+
+    try:
+        # Send the request
+        with urllib.request.urlopen(req) as response:
+            response_data = response.read()
+            return json.loads(response_data)
+    except urllib.error.HTTPError as e:
+        print(f"HTTP error: {e.code} - {e.reason}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return None
