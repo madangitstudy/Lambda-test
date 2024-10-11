@@ -3,10 +3,20 @@ Voucher-test
 
 Response
 {
-  "errorMessage": "'pnr'",
-  "errorType": "KeyError",
-  "requestId": "7957ecff-3f75-4f1e-b416-52b87d62ea69",
+  "errorMessage": "'latin-1' codec can't encode character '\\u0192' in position 8: ordinal not in range(256)",
+  "errorType": "UnicodeEncodeError",
+  "requestId": "f7a61670-f10e-43b2-8b44-cf0ca096b4c6",
   "stackTrace": [
-    "  File \"/var/task/lambda_function.py\", line 64, in lambda_handler\n    pnr = event['pnr']\n"
+    "  File \"/var/task/lambda_function.py\", line 69, in lambda_handler\n    voucher_response = generate_voucher(pnr, first_name, last_name)\n",
+    "  File \"/var/task/lambda_function.py\", line 50, in generate_voucher\n    with urllib.request.urlopen(req) as response:\n",
+    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 215, in urlopen\n    return opener.open(url, data, timeout)\n",
+    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 515, in open\n    response = self._open(req, data)\n",
+    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 532, in _open\n    result = self._call_chain(self.handle_open, protocol, protocol +\n",
+    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 492, in _call_chain\n    result = func(*args)\n",
+    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 1392, in https_open\n    return self.do_open(http.client.HTTPSConnection, req,\n",
+    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 1344, in do_open\n    h.request(req.get_method(), req.selector, req.data, headers,\n",
+    "  File \"/var/lang/lib/python3.12/http/client.py\", line 1336, in request\n    self._send_request(method, url, body, headers, encode_chunked)\n",
+    "  File \"/var/lang/lib/python3.12/http/client.py\", line 1377, in _send_request\n    self.putheader(hdr, value)\n",
+    "  File \"/var/lang/lib/python3.12/http/client.py\", line 1309, in putheader\n    values[i] = one_value.encode('latin-1')\n"
   ]
 }
