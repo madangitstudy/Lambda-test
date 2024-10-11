@@ -1,75 +1,15 @@
-import json
-import urllib.request
-import datetime
+Test Event Name
+Voucher-test
 
-def generate_voucher(pnr, first_name, last_name):
-    # Set API endpoint and credentials
-    api_endpoint = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
-    api_key = "your_api_key_here"  # Ensure this is a valid ASCII-only key
+Response
+{
+  "statusCode": 200,
+  "body": null
+}
 
-    # Print the values being sent to help debug
-    print(f"Generating voucher for: PNR: {pnr}, First Name: {first_name}, Last Name: {last_name}")
-
-    # Set request body
-    expiry_date = (datetime.date.today() + datetime.timedelta(days=30)).strftime("%Y-%m-%dT00:00:00")
-    request_body = {
-        "fields": {
-            "type": "voucher",
-            "fields": {
-                "VoucherType": "your_voucher_type",  # Replace with your valid voucher type
-                "name": {
-                    "first_name": first_name.encode('utf-8').decode('utf-8'),
-                    "last_name": last_name.encode('utf-8').decode('utf-8')
-                },
-                "value": 60.0,
-                "currency": "CAD",
-                "expiry_date": expiry_date,
-                "applicable_to": "base_fare",
-                "pnr": pnr.encode('utf-8').decode('utf-8')
-            }
-        }
-    }
-
-    # Convert request body to JSON string and encode in UTF-8
-    request_data = json.dumps(request_body).encode('utf-8')
-
-    # Set API headers
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json; charset=UTF-8"  # Specify UTF-8
-    }
-
-    # Create the request
-    req = urllib.request.Request(api_endpoint, data=request_data, headers=headers)
-
-    # Send API request
-    try:
-        with urllib.request.urlopen(req) as response:
-            response_data = response.read().decode('utf-8')
-            print("Voucher generated successfully")
-            return json.loads(response_data)
-    except urllib.error.HTTPError as e:
-        print(f"HTTP error: {e.code} - {e.reason}")
-    except urllib.error.URLError as e:
-        print(f"URL error: {e.reason}")
-    except Exception as e:
-        print(f"Unexpected error: {str(e)}")
-
-def lambda_handler(event, context):
-    # Extract parameters from the event
-    pnr = event.get('pnr')  # Use .get() to avoid KeyError
-    first_name = event.get('first_name')
-    last_name = event.get('last_name')
-
-    if not pnr or not first_name or not last_name:
-        return {
-            'statusCode': 400,
-            'body': 'Missing required parameters: pnr, first_name, last_name'
-        }
-
-    # Proceed with voucher generation
-    voucher_response = generate_voucher(pnr, first_name, last_name)
-    return {
-        'statusCode': 200,
-        'body': voucher_response
-    }
+Function Logs
+START RequestId: 7c5f320c-92b2-4e57-9384-215e84fa6cf5 Version: $LATEST
+Generating voucher for: PNR: ABC123, First Name: Jhon, Last Name: Doe
+HTTP error: 401 - Invalid token
+END RequestId: 7c5f320c-92b2-4e57-9384-215e84fa6cf5
+REPORT RequestId: 7c5f320c-92b2-4e57-9384-215e84fa6cf5	Duration: 1080.71 ms	Billed Duration: 1081 ms	Memory Size: 128 MB	Max Memory Used: 48 MB	Init Duration: 140.00 ms
