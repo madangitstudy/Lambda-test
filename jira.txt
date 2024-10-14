@@ -1,34 +1,3 @@
-OTPG | Exercise | API to request voucher generated for eligible pax and flight
-
-Add
-
-Apps
-Description
-
-Next steps:
-
-Endpoint from intellysis
-
-From API on eligibility for all with TRUE for OTPG, create a voucher
-
-API for generating voucher: amelia API Documentation - Vouchers API - POST vouchers/Generate?fields={fields} (intelisystraining.ca)
-
-Details to pass:
-
-Passenger first name
-
-Passenger last name
-
-Expiry date (30 days from creation date)
-
-Booking Window:  none
-
-Value of voucher: $60 CAD
-
-Only applicable to base fare
-
-PNR
-I have this Jira ticket and API fileds are 
 {
   "voucherType": {
     "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
@@ -36,16 +5,31 @@ I have this Jira ticket and API fileds are
     "name": "Late Arrival"
   },
   "generationNumber": 20,
-  "password": null,
-  "personalIdentificationNumber": null,
+  "password": "123456", // Provide a valid password
+  "personalIdentificationNumber": "1234", // Provide a valid PIN
   "autoGeneratePersonalIdentificationNumber": {
     "length": 4
   },
   "autoGeneratePassword": {
     "length": 6
   },
-  "expiryDate": "2024-11-13T19:06:46.9120951Z",
+  "expiryDate": "2024-11-13T19:06:46.9120951Z", // 30 days from the creation date
   "available": 20,
-  "reason": "Sample reason for generating this voucher"
+  "reason": "Voucher for eligible passengers",
+  "eligiblePassengers": [
+    {
+      "firstName": "Alice",
+      "lastName": "Smit",
+      "pnr": "PNR123",
+      "value": 60.00, // Voucher value
+      "bookingWindow": null // None if applicable
+    },
+    {
+      "firstName": "Bob",
+      "lastName": "Johnson",
+      "pnr": "PNR456",
+      "value": 60.00, // Voucher value
+      "bookingWindow": null // None if applicable
+    }
+  ]
 }
-Then how we can generate the code for above ticket what is JOSN code to test the API in postman or in Lambda function
