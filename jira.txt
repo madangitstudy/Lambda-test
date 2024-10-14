@@ -1,31 +1,29 @@
-{
-  "voucherType": {
-    "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
-    "key": "aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8=",
-    "name": "Late Arrival"
-  },
-  "generationNumber": 20,
-  "password": "yourPassword123",  // Update with your actual password
-  "personalIdentificationNumber": "1234",  // Update with your actual PIN
-  "autoGeneratePersonalIdentificationNumber": {
-    "length": 4
-  },
-  "autoGeneratePassword": {
-    "length": 6
-  },
-  "expiryDate": "2024-11-14T07:38:46Z",  // Ensure the date is within the valid range
-  "available": 20,
-  "reason": "Sample reason for generating this voucher",
-  "eligiblePassengers": [
+[
     {
-      "firstName": "Alice",
-      "lastName": "Smit",
-      "pnr": "PNR123"
+        "href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapTZGX439aBRcVPlJULEI9zo=",
+        "key": "4Ny63MjEXGYY85HIOcHapTZGX439aBRcVPlJULEI9zo=",
+        "serialNumber": "77T5BVDAVS",
+        "passengerName": "Not Assigned",
+        "value": 1000.0000,
+        "currency": null,
+        "expiryDate": "2024-11-15 07:38:59"
     },
     {
-      "firstName": "Bob",
-      "lastName": "Johnson",
-      "pnr": "PNR456"
+        "href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapcyFIb8a7ZTliHHlTdjk7U0=",
+        "key": "4Ny63MjEXGYY85HIOcHapcyFIb8a7ZTliHHlTdjk7U0=",
+        "serialNumber": "PMZCRBBNSX",
+        "passengerName": "Not Assigned",
+        "value": 1000.0000,
+        "currency": null,
+        "expiryDate": "2024-11-15 07:38:59"
+    },
+    {
+        "href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapVhJmb7PUQZGiSLP9ml0%C2%A558=",
+        "key": "4Ny63MjEXGYY85HIOcHapVhJmb7PUQZGiSLP9ml0¥58=",
+        "serialNumber": "BRDVMZV9VK",
+        "passengerName": "Not Assigned",
+        "value": 1000.0000,
+        "currency": null,
+        "expiryDate": "2024-11-15 07:38:59"
     }
-  ]
-}
+]
