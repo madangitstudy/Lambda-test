@@ -1,28 +1,14 @@
 {
-  "voucherType": {
-    "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
-    "key": "aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8=",
-    "name": "Late Arrival"
-  },
-  "generationNumber": 20,
-  "personalIdentificationNumber": null,  // Set to null to auto-generate
-  "autoGeneratePersonalIdentificationNumber": {
-    "length": 4  // 4-digit PIN auto-generation
-  },
-  "password": null,  // Set to null to auto-generate
-  "autoGeneratePassword": {
-    "length": 6  // 6-character password auto-generation
-  },
-  "eligiblePassengers": [
-    {
-      "firstName": "Alice",
-      "lastName": "Smit",
-      "pnr": "PNR123"
-    },
-    {
-      "firstName": "Bob",
-      "lastName": "Johnson",
-      "pnr": "PNR456"
-    }
-  ]
+    "ClassName": "System.Data.SqlTypes.SqlTypeException",
+    "Message": "SqlDateTime overflow. Must be between 1/1/1753 12:00:00 AM and 12/31/9999 11:59:59 PM.",
+    "Data": null,
+    "InnerException": null,
+    "HelpURL": null,
+    "StackTraceString": "   at System.Data.SqlTypes.SqlDateTime.FromTimeSpan(TimeSpan value)\r\n   at System.Data.SqlTypes.SqlDateTime.FromDateTime(DateTime value)\r\n   at Microsoft.Data.SqlClient.MetaType.FromDateTime(DateTime dateTime, Byte cb) in D:\\a\\_work\\1\\s\\src\\Microsoft.Data.SqlClient\\netfx\\src\\Microsoft\\Data\\SqlClient\\SqlEnums.cs:line 1024\r\n   at Microsoft.Data.SqlClient.TdsParser.WriteUnterminatedValue(Object value, MetaType type, Byte scale, Int32 actualLength, Int32 encodingByteSize, Int32 offset, TdsParserStateObject stateObj, Int32 paramSize, Boolean isDataFeed) in D:\\a\\_work\\1\\s\\src\\Microsoft.Data.SqlClient\\netfx\\src\\Microsoft\\Data\\SqlClient\\TdsParser.cs:line 12829\r\n   at Microsoft.Data.SqlClient.TdsParser.WriteValue(Object value, MetaType type, Byte scale, Int32 actualLength, Int32 encodingByteSize, Int32 offset, TdsParserStateObject stateObj, Int32 paramSize, Boolean isDataFeed) in D:\\a\\_work\\1\\s\\src\\Microsoft.Data.SqlClient\\netfx\\src\\Microsoft\\Data\\SqlClient\\TdsParser.cs:line 12653\r\n   at Microsoft.Data.SqlClient.TdsParser.TdsExecuteRPC(SqlCommand cmd, _SqlRPC[] rpcArray, Int32 timeout, Boolean inSchema, SqlNotificationRequest notificationRequest, TdsParserStateObject stateObj, Boolean isCommandProc, Boolean sync, TaskCompletionSource`1 completion, Int32 startRpc, Int32 startParam) in D:\\a\\_work\\1\\s\\src\\Microsoft.Data.SqlClient\\netfx\\src\\Microsoft\\Data\\SqlClient\\TdsParser.cs:line 10480\r\n   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest) in D:\\a\\_work\\1\\s\\src\\Microsoft.Data.SqlClient\\netfx\\src\\Microsoft\\Data\\SqlClient\\SqlCommand.cs:line 5562\r\n   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry) in D:\\a\\_work\\1\\s\\src\\Microsoft.Data.SqlClient\\netfx\\src\\Microsoft\\Data\\SqlClient\\SqlCommand.cs:line 5157\r\n   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method) in D:\\a\\_work\\1\\s\\src\\Microsoft.Data.SqlClient\\netfx\\src\\Microsoft\\Data\\SqlClient\\SqlCommand.cs:line 5018\r\n   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method) in D:\\a\\_work\\1\\s\\src\\Microsoft.Data.SqlClient\\netfx\\src\\Microsoft\\Data\\SqlClient\\SqlCommand.cs:line 2489\r\n   at Microsoft.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior) in D:\\a\\_work\\1\\s\\src\\Microsoft.Data.SqlClient\\netfx\\src\\Microsoft\\Data\\SqlClient\\SqlCommand.cs:line 2401\r\n   at System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader()\r\n   at InteliSys.amelia.API.Data.VoucherDefaultDataSource.GenerateVouchers(IDbConnection resConnection, Int32 generationNumber, Voucher voucher, Int32 passwordLength, Int32 pinLength) in Z:\\work\\AMELIA-QAB20-JOB1\\projects\\InteliSys.amelia.API.Data.Managers\\Vouchers\\DataSources\\VoucherDefaultDataSource.cs:line 126\r\n   at InteliSys.amelia.API.Data.VoucherService.GenerateVouchers(Int32 generationNumber, Voucher voucher, Int32 passwordLength, Int32 pinLength) in Z:\\work\\AMELIA-QAB20-JOB1\\projects\\InteliSys.amelia.API.Data.Managers\\Vouchers\\VoucherService.cs:line 866",
+    "RemoteStackTraceString": null,
+    "RemoteStackIndex": 0,
+    "ExceptionMethod": "8\nFromTimeSpan\nSystem.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\nSystem.Data.SqlTypes.SqlDateTime\nSystem.Data.SqlTypes.SqlDateTime FromTimeSpan(System.TimeSpan)",
+    "HResult": -2146232016,
+    "Source": "System.Data",
+    "WatsonBuckets": null
 }
