@@ -1,52 +1,19 @@
-import json
-import requests
+Test Event Name
+test-pax
 
-def lambda_handler(event, context):
-    url = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields={fields}"
-    
-    payload = {
-        "voucherType": {
-            "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
-            "key": "aƒJj2ImKybdP8tQcem2rUrd3sa66LEFx¥BLJTdx9on4",
-            "name": "Late Arrival"
-        },
-        "generationNumber": 20,
-        "password": "123456", # Set your password
-        "personalIdentificationNumber": "1234", # Set your PIN
-        "autoGeneratePersonalIdentificationNumber": {
-            "length": 4
-        },
-        "autoGeneratePassword": {
-            "length": 6
-        },
-        "expiryDate": "2024-11-13T19:06:46.9120951Z",
-        "available": 20,
-        "reason": "Voucher for eligible passengers",
-        "eligiblePassengers": [
-            {
-                "firstName": "Alice",
-                "lastName": "Smit",
-                "pnr": "PNR123",
-                "value": 60.00,
-                "bookingWindow": None
-            },
-            {
-                "firstName": "Bob",
-                "lastName": "Johnson",
-                "pnr": "PNR456",
-                "value": 60.00,
-                "bookingWindow": None
-            }
-        ]
-    }
-    
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Basic YOUR_BASE64_ENCODED_CREDENTIALS'  # Update with your credentials
-    }
+Response
+{
+  "errorMessage": "Unable to import module 'lambda_function': No module named 'requests'",
+  "errorType": "Runtime.ImportModuleError",
+  "requestId": "",
+  "stackTrace": []
+}
 
-    response = requests.post(url, headers=headers, data=json.dumps(payload))
-    return {
-        'statusCode': response.status_code,
-        'body': response.json()
-    }
+Function Logs
+[ERROR] Runtime.ImportModuleError: Unable to import module 'lambda_function': No module named 'requests'
+Traceback (most recent call last):INIT_REPORT Init Duration: 331.44 ms	Phase: init	Status: error	Error Type: Runtime.ImportModuleError
+[ERROR] Runtime.ImportModuleError: Unable to import module 'lambda_function': No module named 'requests'
+Traceback (most recent call last):INIT_REPORT Init Duration: 3922.72 ms	Phase: invoke	Status: error	Error Type: Runtime.ImportModuleError
+START RequestId: 2f85b5c5-f091-435e-a256-4e39c3b25d50 Version: $LATEST
+END RequestId: 2f85b5c5-f091-435e-a256-4e39c3b25d50
+REPORT RequestId: 2f85b5c5-f091-435e-a256-4e39c3b25d50	Duration: 3932.23 ms	Billed Duration: 3933 ms	Memory Size: 128 MB	Max Memory Used: 60 MB	Status: error
