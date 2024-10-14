@@ -1,35 +1,23 @@
 {
-  "voucherType": {
-    "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
-    "key": "aƒJj2ImKybdP8tQcem2rUrd3sa66LEFx¥BLJTdx9on4",
-    "name": "Late Arrival"
-  },
-  "generationNumber": 20,
-  "password": "123456", // Provide a valid password
-  "personalIdentificationNumber": "1234", // Provide a valid PIN
-  "autoGeneratePersonalIdentificationNumber": {
-    "length": 4
-  },
-  "autoGeneratePassword": {
-    "length": 6
-  },
-  "expiryDate": "2024-11-13T19:06:46.9120951Z", // 30 days from the creation date
-  "available": 20,
-  "reason": "Voucher for eligible passengers",
-  "eligiblePassengers": [
-    {
-      "firstName": "Alice",
-      "lastName": "Smit",
-      "pnr": "PNR123",
-      "value": 60.00, // Voucher value
-      "bookingWindow": null // None if applicable
-    },
-    {
-      "firstName": "Bob",
-      "lastName": "Johnson",
-      "pnr": "PNR456",
-      "value": 60.00, // Voucher value
-      "bookingWindow": null // None if applicable
-    }
-  ]
+    "vouchers": [
+        {
+            "href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/1",
+            "key": "voucher-key-1",
+            "serialNumber": "ABC123",
+            "passengerName": "Alice Smit",
+            "value": 60.00,
+            "currency": "CAD",
+            "expiryDate": "2024-12-13T19:06:46Z"
+        },
+        {
+            "href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/2",
+            "key": "voucher-key-2",
+            "serialNumber": "DEF456",
+            "passengerName": "Bob Johnson",
+            "value": 60.00,
+            "currency": "CAD",
+            "expiryDate": "2024-12-13T19:06:46Z"
+        }
+    ],
+    "message": "Vouchers generated successfully"
 }
