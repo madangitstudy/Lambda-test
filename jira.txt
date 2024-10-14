@@ -1,23 +1,52 @@
-{
-    "vouchers": [
-        {
-            "href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/1",
-            "key": "voucher-key-1",
-            "serialNumber": "ABC123",
-            "passengerName": "Alice Smit",
-            "value": 60.00,
-            "currency": "CAD",
-            "expiryDate": "2024-12-13T19:06:46Z"
+import json
+import requests
+
+def lambda_handler(event, context):
+    url = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields={fields}"
+    
+    payload = {
+        "voucherType": {
+            "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
+            "key": "aƒJj2ImKybdP8tQcem2rUrd3sa66LEFx¥BLJTdx9on4",
+            "name": "Late Arrival"
         },
-        {
-            "href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/2",
-            "key": "voucher-key-2",
-            "serialNumber": "DEF456",
-            "passengerName": "Bob Johnson",
-            "value": 60.00,
-            "currency": "CAD",
-            "expiryDate": "2024-12-13T19:06:46Z"
-        }
-    ],
-    "message": "Vouchers generated successfully"
-}
+        "generationNumber": 20,
+        "password": "123456", # Set your password
+        "personalIdentificationNumber": "1234", # Set your PIN
+        "autoGeneratePersonalIdentificationNumber": {
+            "length": 4
+        },
+        "autoGeneratePassword": {
+            "length": 6
+        },
+        "expiryDate": "2024-11-13T19:06:46.9120951Z",
+        "available": 20,
+        "reason": "Voucher for eligible passengers",
+        "eligiblePassengers": [
+            {
+                "firstName": "Alice",
+                "lastName": "Smit",
+                "pnr": "PNR123",
+                "value": 60.00,
+                "bookingWindow": None
+            },
+            {
+                "firstName": "Bob",
+                "lastName": "Johnson",
+                "pnr": "PNR456",
+                "value": 60.00,
+                "bookingWindow": None
+            }
+        ]
+    }
+    
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic YOUR_BASE64_ENCODED_CREDENTIALS'  # Update with your credentials
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(payload))
+    return {
+        'statusCode': response.status_code,
+        'body': response.json()
+    }
