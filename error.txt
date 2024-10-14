@@ -1,101 +1,54 @@
-import os
 import json
-import urllib.request
-from datetime import datetime, timedelta
+import os
+import boto3
+import requests
+from requests.auth import HTTPBasicAuth
 
-# Intellysis API URL for checking OTPG eligibility
-INTELLYSIS_API_URL = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
-# Amelia API URL for generating vouchers 
-AMELIA_API_URL = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
-
-# Lambda function handler
 def lambda_handler(event, context):
-    # Get API key from environment variables or hardcode it for testing
-    intellysis_api_key = os.getenv('INTELLYSIS_API_KEY', 'your-api-key-here')  # Replace with actual API key
-
-    # Check if 'eligiblePassengers' is provided in the event
-    if 'eligiblePassengers' in event:
-        eligible_passengers = event['eligiblePassengers']
-    else:
-        # If not provided, fetch eligible passengers from the Intellysis API
-        eligible_passengers = check_eligibility(intellysis_api_key)
+    # Get environment variables
+    api_url = os.environ['API_URL']
+    username = os.environ['USERNAME']
+    password = os.environ['PASSWORD']
+    voucher_type_key = os.environ['VOUCHER_TYPE_KEY']
     
-    if not eligible_passengers:
+    # Define the payload
+    eligible_passengers = event.get('eligiblePassengers', [])
+    
+    # Prepare the voucher data
+    vouchers_data = {
+        "voucherType": {
+            "href": f"/voucherTypes/{voucher_type_key}",
+            "key": voucher_type_key,
+            "name": "Late Arrival"
+        },
+        "generationNumber": 20,
+        "password": None,
+        "personalIdentificationNumber": None,
+        "autoGeneratePersonalIdentificationNumber": {
+            "length": 4
+        },
+        "autoGeneratePassword": {
+            "length": 6
+        },
+        "expiryDate": "2024-12-13T19:06:46Z",  # Set to 30 days from creation
+        "available": 20,
+        "reason": "Generated via AWS Lambda",
+        "eligiblePassengers": eligible_passengers
+    }
+    
+    # Make the API call to generate vouchers
+    response = requests.post(api_url, 
+                             json=vouchers_data, 
+                             auth=HTTPBasicAuth(username, password))
+    
+    # Handle the response
+    if response.status_code == 200:
         return {
-            'statusCode': 200,
-            'body': json.dumps('No eligible passengers found.')
+            "statusCode": 200,
+            "body": json.loads(response.text)
         }
-    
-    # For each eligible passenger, generate a voucher
-    vouchers = []
-    for passenger in eligible_passengers:
-        print(f"Processing passenger: {passenger}")  # Log passenger details
-        voucher = generate_voucher(passenger, intellysis_api_key)
-        if voucher:
-            vouchers.append(voucher)
-    
-    # Return the list of generated vouchers
-    return {
-        'statusCode': 200,
-        'body': json.dumps({
-            'generatedVouchers': vouchers
-        })
-    }
-
-# Function to check OTPG eligibility via Intellysis API
-def check_eligibility(api_key):
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {api_key}'  # Replace with correct header type if needed
-    }
-    
-    req = urllib.request.Request(INTELLYSIS_API_URL, headers=headers)
-    
-    try:
-        with urllib.request.urlopen(req) as response:
-            if response.status == 200:
-                data = response.read()
-                print(f"Eligibility API Response: {data}")  # Log API response
-                # Parse the eligible passengers data (assuming response is in JSON format)
-                return json.loads(data).get('eligiblePassengers', [])
-            else:
-                print(f"Failed to fetch eligibility: {response.status}")
-                return []
-    except Exception as e:
-        print(f"Error fetching eligibility: {e}")
-        return []
-
-# Function to generate voucher via Amelia API
-def generate_voucher(passenger, api_key):
-    # Prepare the request payload for Amelia API
-    payload = {
-        "passengerFirstName": passenger["firstName"],
-        "passengerLastName": passenger["lastName"],
-        "expiryDate": (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d"),
-        "bookingWindow": "None",
-        "voucherValue": "60 CAD",
-        "pnr": passenger["pnr"]
-    }
-
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {api_key}'  # Use correct header for your API key
-    }
-    
-    data = json.dumps(payload).encode('utf-8')
-    req = urllib.request.Request(AMELIA_API_URL, data=data, headers=headers, method='POST')
-    
-    try:
-        print(f"Sending voucher generation request to {AMELIA_API_URL} with payload: {payload}")  # Log request details
-        with urllib.request.urlopen(req) as response:
-            if response.status == 201:
-                # Voucher created successfully
-                voucher_data = json.loads(response.read())
-                print(f"Voucher generated: {voucher_data}")  # Log voucher details
-                return voucher_data
-            else:
-                print(f"Error generating voucher for {passenger['firstName']} {passenger['lastName']}: {response.status}")
-                return None
-    except Exception as e:
-        print(f"Error generating voucher: {e}")
-        return None
+    else:
+        return {
+            "statusCode": response.status_code,
+            "body": response.text
+        }
