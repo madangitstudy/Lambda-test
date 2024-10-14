@@ -1,5 +1,10 @@
 {
-  "eligiblePassengers": [
+  "voucherType": {
+    "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
+    "key": "aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8=",
+    "name": "Late Arrival"
+  },
+   "eligiblePassengers": [
     {
       "firstName": "Alice",
       "lastName": "Smit",
@@ -10,22 +15,7 @@
       "lastName": "Johnson",
       "pnr": "PNR456"
     }
-  ],
-  "voucherType": {
-    "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
-    "key": "aƒJj2ImKybdP8tQcem2rUrd3sa66LEFx¥BLJTdx9on4",
-    "name": "Late Arrival"
-  },
-  "generationNumber": 20,
-  "password": null,
-  "personalIdentificationNumber": null,
-  "autoGeneratePersonalIdentificationNumber": {
-    "length": 4
-  },
-  "autoGeneratePassword": {
-    "length": 6
-  },
-  "expiryDate": "2024-11-14T07:38:46.7130933Z",
-  "available": 20,
-  "reason": "Sample reason for generating this voucher"
+  ]
 }
+
+Now getting error as generation number is required
