@@ -1,85 +1,11 @@
-import json
-import urllib.request
-from datetime import datetime, timedelta
+Test Event Name
+test-pax
 
-def lambda_handler(event, context):
-    # Define the URL for the API
-    url = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields={fields}"
-
-    # Define the expiry date (30 days from now)
-    expiry_date = (datetime.utcnow() + timedelta(days=30)).isoformat() + "Z"
-
-    # Construct the payload as per your requirement
-    payload = {
-        "voucherType": {
-            "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
-            "key": "aƒJj2ImKybdP8tQcem2rUrd3sa66LEFx¥BLJTdx9on4",
-            "name": "Late Arrival"
-        },
-        "generationNumber": 20,
-        "password": None,  # You can generate this if needed
-        "personalIdentificationNumber": None,  # You can generate this if needed
-        "autoGeneratePersonalIdentificationNumber": {
-            "length": 4
-        },
-        "autoGeneratePassword": {
-            "length": 6
-        },
-        "expiryDate": expiry_date,  # Set to 30 days from creation date
-        "available": 20,  # Adjust this as needed
-        "reason": "Sample reason for generating this voucher",
-        "bookingWindow": "none",  # Add booking window
-        "voucherValue": 60,  # Set the value of the voucher ($60 CAD)
-        "eligiblePassengers": [
-            {
-                "firstName": "Alice",
-                "lastName": "Smit",
-                "pnr": "PNR123"
-            },
-            {
-                "firstName": "Bob",
-                "lastName": "Johnson",
-                "pnr": "PNR456"
-            }
-        ]
-    }
-
-    # Convert the payload to JSON format
-    json_payload = json.dumps(payload).encode('utf-8')
-
-    # Create a request object
-    req = urllib.request.Request(url, data=json_payload, method='POST')
-    req.add_header('Content-Type', 'application/json')
-
-    try:
-        # Make the API request
-        with urllib.request.urlopen(req) as response:
-            # Read the response
-            response_body = response.read()
-            response_data = json.loads(response_body)
-            return {
-                'statusCode': 200,
-                'body': response_data
-            }
-    except urllib.error.HTTPError as e:
-        # Handle HTTP errors
-        try:
-            error_message = e.read().decode('utf-8')
-            # Try to parse the error message if it’s JSON
-            error_response = json.loads(error_message)
-        except json.JSONDecodeError:
-            # If error message is not JSON, return a generic message
-            error_response = {
-                "error": "An error occurred while processing your request.",
-                "details": error_message  # Log the raw error message for debugging
-            }
-        return {
-            'statusCode': e.code,
-            'body': error_response
-        }
-    except Exception as e:
-        # Handle other exceptions
-        return {
-            'statusCode': 500,
-            'body': str(e)
-        }
+Response
+{
+  "statusCode": 401,
+  "body": {
+    "error": "An error occurred while processing your request.",
+    "details": ""
+  }
+}
