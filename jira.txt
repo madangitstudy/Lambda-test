@@ -4,7 +4,8 @@
     "key": "aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8=",
     "name": "Late Arrival"
   },
-   "eligiblePassengers": [
+  "generationNumber": 20,
+  "eligiblePassengers": [
     {
       "firstName": "Alice",
       "lastName": "Smit",
@@ -17,5 +18,3 @@
     }
   ]
 }
-
-Now getting error as generation number is required
