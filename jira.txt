@@ -1,19 +1,76 @@
-Test Event Name
-test-pax
+import json
+import urllib.request
+from datetime import datetime, timedelta
 
-Response
-{
-  "errorMessage": "Unable to import module 'lambda_function': No module named 'requests'",
-  "errorType": "Runtime.ImportModuleError",
-  "requestId": "",
-  "stackTrace": []
-}
+def lambda_handler(event, context):
+    # Define the URL for the API
+    url = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields={fields}"
 
-Function Logs
-[ERROR] Runtime.ImportModuleError: Unable to import module 'lambda_function': No module named 'requests'
-Traceback (most recent call last):INIT_REPORT Init Duration: 331.44 ms	Phase: init	Status: error	Error Type: Runtime.ImportModuleError
-[ERROR] Runtime.ImportModuleError: Unable to import module 'lambda_function': No module named 'requests'
-Traceback (most recent call last):INIT_REPORT Init Duration: 3922.72 ms	Phase: invoke	Status: error	Error Type: Runtime.ImportModuleError
-START RequestId: 2f85b5c5-f091-435e-a256-4e39c3b25d50 Version: $LATEST
-END RequestId: 2f85b5c5-f091-435e-a256-4e39c3b25d50
-REPORT RequestId: 2f85b5c5-f091-435e-a256-4e39c3b25d50	Duration: 3932.23 ms	Billed Duration: 3933 ms	Memory Size: 128 MB	Max Memory Used: 60 MB	Status: error
+    # Define the expiry date (30 days from now)
+    expiry_date = (datetime.utcnow() + timedelta(days=30)).isoformat() + "Z"
+
+    # Construct the payload as per your requirement
+    payload = {
+        "voucherType": {
+            "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
+            "key": "aƒJj2ImKybdP8tQcem2rUrd3sa66LEFx¥BLJTdx9on4",
+            "name": "Late Arrival"
+        },
+        "generationNumber": 20,
+        "password": None,  # You can generate this if needed
+        "personalIdentificationNumber": None,  # You can generate this if needed
+        "autoGeneratePersonalIdentificationNumber": {
+            "length": 4
+        },
+        "autoGeneratePassword": {
+            "length": 6
+        },
+        "expiryDate": expiry_date,  # Set to 30 days from creation date
+        "available": 20,  # Adjust this as needed
+        "reason": "Sample reason for generating this voucher",
+        "bookingWindow": "none",  # Add booking window
+        "voucherValue": 60,  # Set the value of the voucher ($60 CAD)
+        "eligiblePassengers": [
+            {
+                "firstName": "Alice",
+                "lastName": "Smit",
+                "pnr": "PNR123"
+            },
+            {
+                "firstName": "Bob",
+                "lastName": "Johnson",
+                "pnr": "PNR456"
+            }
+        ]
+    }
+
+    # Convert the payload to JSON format
+    json_payload = json.dumps(payload).encode('utf-8')
+
+    # Create a request object
+    req = urllib.request.Request(url, data=json_payload, method='POST')
+    req.add_header('Content-Type', 'application/json')
+
+    try:
+        # Make the API request
+        with urllib.request.urlopen(req) as response:
+            # Read the response
+            response_body = response.read()
+            response_data = json.loads(response_body)
+            return {
+                'statusCode': 200,
+                'body': response_data
+            }
+    except urllib.error.HTTPError as e:
+        # Handle HTTP errors
+        error_message = e.read().decode('utf-8')
+        return {
+            'statusCode': e.code,
+            'body': json.loads(error_message)
+        }
+    except Exception as e:
+        # Handle other exceptions
+        return {
+            'statusCode': 500,
+            'body': str(e)
+        }
