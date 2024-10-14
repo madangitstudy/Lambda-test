@@ -1,3 +1,4 @@
+import os
 import json
 import urllib.request
 from datetime import datetime, timedelta
@@ -9,12 +10,15 @@ AMELIA_API_URL = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Gene
 
 # Lambda function handler
 def lambda_handler(event, context):
+    # Get API key from environment variables or hardcode it for testing
+    intellysis_api_key = os.getenv('INTELLYSIS_API_KEY', 'your-api-key-here')  # Replace with actual API key
+
     # Check if 'eligiblePassengers' is provided in the event
     if 'eligiblePassengers' in event:
         eligible_passengers = event['eligiblePassengers']
     else:
         # If not provided, fetch eligible passengers from the Intellysis API
-        eligible_passengers = check_eligibility()
+        eligible_passengers = check_eligibility(intellysis_api_key)
     
     if not eligible_passengers:
         return {
@@ -26,7 +30,7 @@ def lambda_handler(event, context):
     vouchers = []
     for passenger in eligible_passengers:
         print(f"Processing passenger: {passenger}")  # Log passenger details
-        voucher = generate_voucher(passenger)
+        voucher = generate_voucher(passenger, intellysis_api_key)
         if voucher:
             vouchers.append(voucher)
     
@@ -39,10 +43,10 @@ def lambda_handler(event, context):
     }
 
 # Function to check OTPG eligibility via Intellysis API
-def check_eligibility():
+def check_eligibility(api_key):
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8='  # Update with actual token
+        'Authorization': f'Bearer {api_key}'  # Replace with correct header type if needed
     }
     
     req = urllib.request.Request(INTELLYSIS_API_URL, headers=headers)
@@ -62,7 +66,7 @@ def check_eligibility():
         return []
 
 # Function to generate voucher via Amelia API
-def generate_voucher(passenger):
+def generate_voucher(passenger, api_key):
     # Prepare the request payload for Amelia API
     payload = {
         "passengerFirstName": passenger["firstName"],
@@ -75,7 +79,7 @@ def generate_voucher(passenger):
 
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8='  # Update with actual token
+        'Authorization': f'Bearer {api_key}'  # Use correct header for your API key
     }
     
     data = json.dumps(payload).encode('utf-8')
@@ -95,40 +99,3 @@ def generate_voucher(passenger):
     except Exception as e:
         print(f"Error generating voucher: {e}")
         return None
-###########
-JSON file is 
-{
-  "eligiblePassengers": [
-    {
-      "firstName": "Alice",
-      "lastName": "Smit",
-      "pnr": "PNR123"
-    },
-    {
-      "firstName": "Bob",
-      "lastName": "Johnson",
-      "pnr": "PNR456"
-    }
-  ]
-}
-
-While running getting below error. 
-Test Event Name
-test-pax
-
-Response
-{
-  "statusCode": 200,
-  "body": "{\"generatedVouchers\": []}"
-}
-
-Function Logs
-START RequestId: e62630b8-5f3c-43e5-a187-a3fdcc2e45f9 Version: $LATEST
-Processing passenger: {'firstName': 'Alice', 'lastName': 'Smit', 'pnr': 'PNR123'}
-Sending voucher generation request to https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields with payload: {'passengerFirstName': 'Alice', 'passengerLastName': 'Smit', 'expiryDate': '2024-11-13', 'bookingWindow': 'None', 'voucherValue': '60 CAD', 'pnr': 'PNR123'}
-Error generating voucher: 'latin-1' codec can't encode character '\u0192' in position 1: ordinal not in range(256)
-Processing passenger: {'firstName': 'Bob', 'lastName': 'Johnson', 'pnr': 'PNR456'}
-Sending voucher generation request to https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields with payload: {'passengerFirstName': 'Bob', 'passengerLastName': 'Johnson', 'expiryDate': '2024-11-13', 'bookingWindow': 'None', 'voucherValue': '60 CAD', 'pnr': 'PNR456'}
-Error generating voucher: 'latin-1' codec can't encode character '\u0192' in position 1: ordinal not in range(256)
-END RequestId: e62630b8-5f3c-43e5-a187-a3fdcc2e45f9
-REPORT RequestId: e62630b8-5f3c-43e5-a187-a3fdcc2e45f9	Duration: 5.30 ms	Billed Duration: 6 ms	Memory Size: 128 MB	Max Memory Used: 47 MB
