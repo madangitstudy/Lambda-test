@@ -1,6 +1,4 @@
-https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields
-
-using the JSON file as - {
+{
   "eligiblePassengers": [
     {
       "firstName": "Alice",
@@ -12,11 +10,7 @@ using the JSON file as - {
       "lastName": "Johnson",
       "pnr": "PNR456"
     }
-  ]
-}
-
-Actual API format for above url is -this is just dumpy example but above on I need to run the for voucher gerneration PAX code.
-
+  ],
   "voucherType": {
     "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
     "key": "aƒJj2ImKybdP8tQcem2rUrd3sa66LEFx¥BLJTdx9on4",
@@ -35,9 +29,3 @@ Actual API format for above url is -this is just dumpy example but above on I ne
   "available": 20,
   "reason": "Sample reason for generating this voucher"
 }
-I am using authorization as Auth and user 0 xxxx and password - 0000122
-once we run the postman getting error messsage as 
-{
-    "message": "VoucherType key is required."
-}
-where should I put API in this case to test in postman
