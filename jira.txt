@@ -5,6 +5,10 @@
     "name": "Late Arrival"
   },
   "generationNumber": 20,
+  "personalIdentificationNumber": null,  // Set to null if auto-generating
+  "autoGeneratePersonalIdentificationNumber": {
+    "length": 4  // This will automatically generate a 4-digit PIN
+  },
   "eligiblePassengers": [
     {
       "firstName": "Alice",
