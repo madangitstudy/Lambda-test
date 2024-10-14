@@ -1,42 +1,19 @@
-OTPG | Exercise | API to request voucher generated for eligible pax and flight
-Description
+Test Event Name
+test-pax
 
-Next steps:
-
-Endpoint from intellysis
-
-From API on eligibility for all with TRUE for OTPG, create a voucher
-
-API for generating voucher: amelia API Documentation - Vouchers API - POST vouchers/Generate?fields={fields} (intelisystraining.ca)
-
-Details to pass:
-
-1.Passenger first name
-
-2.Passenger last name
-
-3.Expiry date (30 days from creation date)
-
-4.Booking Window:  none
-
-5.Value of voucher: $60 CAD
-
-6.Only applicable to base fare
-
-7.PNR
-
-
+Response
 {
-    "errors": [
-        {
-            "id": "41b213e3-f9bf-40d4-aa2a-f51039a25c0f",
-            "status": 401,
-            "code": "not_authenticated",
-            "title": "Authentication credentials were not provided.",
-            "detail": "Missing or invalid authorization scheme. Please use Klaviyo-API-Key.",
-            "source": {
-                "pointer": "/data/"
-            }
-        }
-    ]
+  "statusCode": 200,
+  "body": "{\"generatedVouchers\": []}"
 }
+
+Function Logs
+START RequestId: f1d0af91-9d2b-4d74-aedb-75453fa49275 Version: $LATEST
+Processing passenger: {'firstName': 'Alice', 'lastName': 'Smit', 'pnr': 'PNR123'}
+Sending voucher generation request to https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields with payload: {'passengerFirstName': 'Alice', 'passengerLastName': 'Smit', 'expiryDate': '2024-11-13', 'bookingWindow': 'None', 'voucherValue': '60 CAD', 'pnr': 'PNR123'}
+Error generating voucher: 'latin-1' codec can't encode character '\u0192' in position 8: ordinal not in range(256)
+Processing passenger: {'firstName': 'Bob', 'lastName': 'Johnson', 'pnr': 'PNR456'}
+Sending voucher generation request to https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields with payload: {'passengerFirstName': 'Bob', 'passengerLastName': 'Johnson', 'expiryDate': '2024-11-13', 'bookingWindow': 'None', 'voucherValue': '60 CAD', 'pnr': 'PNR456'}
+Error generating voucher: 'latin-1' codec can't encode character '\u0192' in position 8: ordinal not in range(256)
+END RequestId: f1d0af91-9d2b-4d74-aedb-75453fa49275
+REPORT RequestId: f1d0af91-9d2b-4d74-aedb-75453fa49275	Duration: 902.57 ms	Billed Duration: 903 ms	Memory Size: 128 MB	Max Memory Used: 47 MB	Init Duration: 146.62 ms
