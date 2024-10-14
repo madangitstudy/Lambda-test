@@ -1,6 +1,6 @@
 import json
-import requests
- 
+import urllib3
+
 def lambda_handler(event, context):
     # Extract parameters from the event object
     departure_date = event.get('departureDate', "2024-10-05")
@@ -8,14 +8,19 @@ def lambda_handler(event, context):
     days_after_departure = event.get('daysAfterDeparture', 30)
     passenger_count = event.get('passengerCount', "ADT:1")
     currency = event.get('currency', "CAD")
+    
     # API URL
     url = f"https://flairair-api.intelisystraining.ca/RESTv1/travelOptions?daysAfterDeparture={days_after_departure}&passengerCounts={passenger_count}&currency={currency}&departure={departure_date}&cityPair={city_pair}"
+    
+    # Initialize urllib3 PoolManager
+    http = urllib3.PoolManager()
+    
     try:
         # Send GET request to the API
-        response = requests.get(url)
-        response.raise_for_status()
+        response = http.request('GET', url)
         # Parse the response JSON
-        data = response.json()
+        data = json.loads(response.data.decode('utf-8'))
+        
         # List to store formatted travel details
         travel_details = []
         for option in data:
@@ -30,25 +35,15 @@ def lambda_handler(event, context):
                     "departure_date": departure_date,
                     "cheapest_fare": cheapest_fare
                 })
+        
         # Return the response as a list of dictionaries
         return {
             'statusCode': 200,
-            'body': travel_details
+            'body': json.dumps(travel_details)
         }
-    except requests.exceptions.RequestException as e:
+    
+    except urllib3.exceptions.HTTPError as e:
         return {
             'statusCode': 500,
             'body': json.dumps({'error': str(e)})
         }
-
-getting error while ruuning 
-Test Event Name
-test
-
-Response
-{
-  "errorMessage": "Unable to import module 'lambda_function': No module named 'requests'",
-  "errorType": "Runtime.ImportModuleError",
-  "requestId": "",
-  "stackTrace": []
-}
