@@ -1,66 +1,80 @@
 import json
 import urllib.request
-import datetime
+import base64
+import os
+from datetime import datetime, timedelta
 
-def generate_voucher(pnr, first_name, last_name):
-    # Set API endpoint and headers
-    endpoint = "https://intelisystraining.ca/vouchers/Generate"
-    headers = {"Content-Type": "application/json"}
+def lambda_handler(event, context):
+    # Define the URL for the API
+    url = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields={fields}"
 
-    # Set voucher details
-    voucher_value = 60
-    voucher_currency = "CAD"
-    voucher_expiration_date = (datetime.datetime.now() + datetime.timedelta(days=30)).strftime("%Y-%m-%d")
-    voucher_applicable_to = "base_fare"
+    # Define the expiry date (30 days from now)
+    expiry_date = (datetime.utcnow() + timedelta(days=30)).isoformat() + "Z"
 
-    # Set eligibility details
-    voucher_eligibility = {
-        "pnr": pnr,
-        "passenger_first_name": first_name,
-        "passenger_last_name": last_name
+    # Construct the payload
+    payload = {
+        "voucherType": {
+            "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
+            "key": os.environ['VOUCHER_KEY'],
+            "name": "Late Arrival"
+        },
+        "generationNumber": 2,
+        "password": None,
+        "personalIdentificationNumber": None,
+        "autoGeneratePersonalIdentificationNumber": {
+            "length": 4
+        },
+        "autoGeneratePassword": {
+            "length": 6
+        },
+        "expiryDate": expiry_date,
+        "available": 20,
+        "reason": "Sample reason for generating this voucher",
+        "bookingWindow": "none",
+        "voucherValue": 60,
+        "eligiblePassengers": [
+            {
+                "firstName": "Alice",
+                "lastName": "Smit",
+                "pnr": "PNR123"
+            },
+            {
+                "firstName": "Bob",
+                "lastName": "Johnson",
+                "pnr": "PNR456"
+            }
+        ]
     }
-
-    # Set request body
-    body = {
-        "fields": {
-            "voucher_value": voucher_value,
-            "voucher_currency": voucher_currency,
-            "voucher_expiration_date": voucher_expiration_date,
-            "voucher_applicable_to": voucher_applicable_to,
-            "voucher_eligibility": voucher_eligibility
-        }
-    }
-
-    # Convert body to JSON string and encode it to bytes
-    data = json.dumps(body).encode('utf-8')
 
     # Create a request object
-    req = urllib.request.Request(endpoint, data=data, headers=headers)
+    req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), method='POST')
+    req.add_header('Content-Type', 'application/json')
+
+    # Add Basic Authentication
+    username = os.environ['USERNAME']
+    password = os.environ['PASSWORD']
+    credentials = f"{username}:{password}"
+    b64_credentials = base64.b64encode(credentials.encode()).decode()
+    req.add_header('Authorization', f'Basic {b64_credentials}')
 
     try:
-        # Send the request and capture the response
+        # Make the API request
         with urllib.request.urlopen(req) as response:
-            # Read the response and decode it
-            response_data = response.read().decode('utf-8')
-            # Parse the JSON response
-            result = json.loads(response_data)
-
-            # Check for voucher in the response
-            if response.status == 201:
-                return result.get("voucher", "Voucher details missing in response")
-            else:
-                return {"error": f"Unexpected response code: {response.status}"}
+            response_body = response.read()
+            response_data = json.loads(response_body)
+            return {
+                'statusCode': 200,
+                'body': response_data
+            }
     except urllib.error.HTTPError as e:
-        # Handle HTTP errors
-        return {"error": f"HTTPError: {e.code} {e.reason}"}
-    except urllib.error.URLError as e:
-        # Handle URL errors
-        return {"error": f"URLError: {e.reason}"}
-
-# Example usage:
-pnr = "ABC123"
-first_name = "John"
-last_name = "Doe"
-
-voucher = generate_voucher(pnr, first_name, last_name)
-print(voucher)
+        error_message = e.read().decode('utf-8')
+        error_response = {"error": "An error occurred while processing your request.", "details": error_message}
+        return {
+            'statusCode': e.code,
+            'body': error_response
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': str(e)
+        }
