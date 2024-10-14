@@ -1,101 +1,19 @@
-import os
-import json
-import urllib.request
-from datetime import datetime, timedelta
+est Event Name
+test-pax
 
-# Intellysis API URL for checking OTPG eligibility
-INTELLYSIS_API_URL = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
-# Amelia API URL for generating vouchers 
-AMELIA_API_URL = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields"
+Response
+{
+  "statusCode": 200,
+  "body": "{\"generatedVouchers\": []}"
+}
 
-# Lambda function handler
-def lambda_handler(event, context):
-    # Get API key from environment variables or hardcode it for testing
-    api_key = os.getenv('API_KEY', 'your-api-key-here')  # Replace with actual API key
-
-    # Check if 'eligiblePassengers' is provided in the event
-    if 'eligiblePassengers' in event:
-        eligible_passengers = event['eligiblePassengers']
-    else:
-        # If not provided, fetch eligible passengers from the Intellysis API
-        eligible_passengers = check_eligibility(api_key)
-    
-    if not eligible_passengers:
-        return {
-            'statusCode': 200,
-            'body': json.dumps('No eligible passengers found.')
-        }
-    
-    # For each eligible passenger, generate a voucher
-    vouchers = []
-    for passenger in eligible_passengers:
-        print(f"Processing passenger: {passenger}")  # Log passenger details
-        voucher = generate_voucher(passenger, api_key)
-        if voucher:
-            vouchers.append(voucher)
-    
-    # Return the list of generated vouchers
-    return {
-        'statusCode': 200,
-        'body': json.dumps({
-            'generatedVouchers': vouchers
-        })
-    }
-
-# Function to check OTPG eligibility via Intellysis API
-def check_eligibility(api_key):
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {api_key.encode("utf-8").decode("utf-8")}'  # Ensure proper UTF-8 encoding
-    }
-    
-    req = urllib.request.Request(INTELLYSIS_API_URL, headers=headers)
-    
-    try:
-        with urllib.request.urlopen(req) as response:
-            if response.status == 200:
-                data = response.read()
-                print(f"Eligibility API Response: {data}")  # Log API response
-                # Parse the eligible passengers data (assuming response is in JSON format)
-                return json.loads(data).get('eligiblePassengers', [])
-            else:
-                print(f"Failed to fetch eligibility: {response.status}")
-                return []
-    except Exception as e:
-        print(f"Error fetching eligibility: {e}")
-        return []
-
-# Function to generate voucher via Amelia API
-def generate_voucher(passenger, api_key):
-    # Prepare the request payload for Amelia API
-    payload = {
-        "passengerFirstName": passenger["firstName"],
-        "passengerLastName": passenger["lastName"],
-        "expiryDate": (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d"),
-        "bookingWindow": "None",
-        "voucherValue": "60 CAD",
-        "pnr": passenger["pnr"]
-    }
-
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {api_key.encode("utf-8").decode("utf-8")}'  # Ensure proper UTF-8 encoding
-    }
-    
-    data = json.dumps(payload).encode('utf-8')
-    req = urllib.request.Request(AMELIA_API_URL, data=data, headers=headers, method='POST')
-    
-    try:
-        print(f"Sending voucher generation request to {AMELIA_API_URL} with payload: {payload}")  # Log request details
-        with urllib.request.urlopen(req) as response:
-            if response.status == 201:
-                # Voucher created successfully
-                voucher_data = json.loads(response.read())
-                print(f"Voucher generated: {voucher_data}")  # Log voucher details
-                return voucher_data
-            else:
-                print(f"Error generating voucher for {passenger['firstName']} {passenger['lastName']}: {response.status}")
-                return None
-    except Exception as e:
-        print(f"Error generating voucher: {e}")
-        return None
+Function Logs
+START RequestId: 89189e33-aaeb-43fe-8862-ab9a0ac4e948 Version: $LATEST
+Processing passenger: {'firstName': 'Alice', 'lastName': 'Smit', 'pnr': 'PNR123'}
+Sending voucher generation request to https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields with payload: {'passengerFirstName': 'Alice', 'passengerLastName': 'Smit', 'expiryDate': '2024-11-13', 'bookingWindow': 'None', 'voucherValue': '60 CAD', 'pnr': 'PNR123'}
+Error generating voucher: 'latin-1' codec can't encode character '\u0192' in position 14: ordinal not in range(256)
+Processing passenger: {'firstName': 'Bob', 'lastName': 'Johnson', 'pnr': 'PNR456'}
+Sending voucher generation request to https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields with payload: {'passengerFirstName': 'Bob', 'passengerLastName': 'Johnson', 'expiryDate': '2024-11-13', 'bookingWindow': 'None', 'voucherValue': '60 CAD', 'pnr': 'PNR456'}
+Error generating voucher: 'latin-1' codec can't encode character '\u0192' in position 14: ordinal not in range(256)
+END RequestId: 89189e33-aaeb-43fe-8862-ab9a0ac4e948
+REPORT RequestId: 89189e33-aaeb-43fe-8862-ab9a0ac4e948	Duration: 885.45 ms	Billed Duration: 886 ms	Memory Size: 128 MB	Max Memory Used: 47 MB	Init Duration: 140.97 ms
