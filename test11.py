@@ -59,7 +59,8 @@ def lambda_handler(event, context):
                             "voucher": {
                                 "expiry_date": None,
                                 "unique_voucher_code": None,
-                                "voucher_value": None
+                                "voucher_value": None,
+                                "message": "Passenger must be over 18 years old"  # Added message
                             }
                         }
                     ]
@@ -96,7 +97,3 @@ def lambda_handler(event, context):
             "statusCode": 500,
             "body": f"Internal server error: {str(e)}"
         }
-
-I need to add the below parameters in the above code and run it 
-If voucher number is empty
-Send "Passenger must be over 18 years old at time of booking" for the parameter
