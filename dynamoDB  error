@@ -1,23 +1,25 @@
-# Logic to check for ungenerated vouchers and generate them
-for voucher in retrieved_vouchers:
-    if 'VoucherCode' not in voucher or voucher['VoucherCode'] is None or voucher['VoucherCode'] == "":
-        # Generate the voucher
-        new_voucher_code = generate_voucher_code()  # Implement your code generation logic here
-        expiry_date = (datetime.utcnow() + timedelta(days=60)).strftime('%Y-%m-%d %H:%M:%S')
+Test Event Name
+test1
 
-        # Update the DynamoDB entry
-        table.update_item(
-            Key={'PNR': voucher['PNR']},
-            UpdateExpression='SET VoucherCode = :val1, VoucherExpiryDate = :val2',
-            ExpressionAttributeValues={
-                ':val1': new_voucher_code,
-                ':val2': expiry_date
-            }
-        )
+Response
+{
+  "errorMessage": "Syntax error in module 'lambda_function': expected 'except' or 'finally' block (lambda_function.py, line 29)",
+  "errorType": "Runtime.UserCodeSyntaxError",
+  "requestId": "",
+  "stackTrace": [
+    "  File \"/var/task/lambda_function.py\" Line 29\n    for voucher in retrieved_vouchers:\n"
+  ]
+}
 
-        # Add to generated vouchers list
-        generated_vouchers.append({
-            'PNR': voucher['PNR'],
-            'VoucherCode': new_voucher_code,
-            'ExpiryDate': expiry_date
-        })
+Function Logs
+[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': expected 'except' or 'finally' block (lambda_function.py, line 29)
+Traceback (most recent call last):
+  File "/var/task/lambda_function.py" Line 29
+    for voucher in retrieved_vouchers:INIT_REPORT Init Duration: 127.94 ms	Phase: init	Status: error	Error Type: Runtime.UserCodeSyntaxError
+[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': expected 'except' or 'finally' block (lambda_function.py, line 29)
+Traceback (most recent call last):
+  File "/var/task/lambda_function.py" Line 29
+    for voucher in retrieved_vouchers:INIT_REPORT Init Duration: 1383.55 ms	Phase: invoke	Status: error	Error Type: Runtime.UserCodeSyntaxError
+START RequestId: 6b389804-24a2-46c4-8b65-978be765778f Version: $LATEST
+END RequestId: 6b389804-24a2-46c4-8b65-978be765778f
+REPORT RequestId: 6b389804-24a2-46c4-8b65-978be765778f	Duration: 1408.12 ms	Billed Duration: 1409 ms	Memory Size: 128 MB	Max Memory Used: 43 MB	Status: error
