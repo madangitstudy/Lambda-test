@@ -91,3 +91,15 @@ payload = {
             'statusCode': 500,
             'body': str(e)
         }
+Test Event Name
+test1
+
+Response
+{
+  "errorMessage": "Syntax error in module 'lambda_function': unexpected indent (lambda_function.py, line 63)",
+  "errorType": "Runtime.UserCodeSyntaxError",
+  "requestId": "",
+  "stackTrace": [
+    "  File \"/var/task/lambda_function.py\" Line 63\n        req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), method='POST')\n"
+  ]
+}
