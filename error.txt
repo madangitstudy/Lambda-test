@@ -1,43 +1,40 @@
-API GET -https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapS5R5tWxaptwGWPntb0GVGY=
-
-href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapS5R5tWxaptwGWPntb0GVGY=",
-    "key": "4Ny63MjEXGYY85HIOcHapS5R5tWxaptwGWPntb0GVGY=",
-    "serialNumber": "4SV1WTFSF6",
-    "passengerName": "Not Assigned",
-    "value": 1000.0000,
-    "currency": {
-        "href": "https://flairair-api.intelisystraining.ca/RESTv1/currencies/CAD",
-        "code": "CAD",
-        "description": "Canadian Dollars"
-    },
-    "expiryDate": "2024-10-23 10:04:59",
-    "voucherType": {
-        "href": "https://flairair-api.intelisystraining.ca/RESTv1/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l%C2%A5DYg8=",
-        "key": "aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8=",
-        "name": "IntelisysTest",
-        "redemptionConditions": {
-            "paysFullBalance": false,
-            "applicableToFareOnly": false,
-            "pinRequired": false,
-            "oneTimeUse": true,
-            "applicableFareClasses": [],
-            "applicableCityPairs": [],
-            "applicableCompanies": []
-        }
-    },
-    "status": {
-        "expired": false,
-        "current": true,
-        "future": false
-    },
-    "password": "FCUQBY",
-    "personalIdentificationNumber": "2374",
-    "redeemedReservations": null,
-    "available": 1,
-    "redeemed": 0,
-    "email": "",
-    "reason": "Sample reason for generating this voucher",
-    "issuedReservation": null,
-    "issuedFlight": null,
-    "timestamp": "AAAAATYhARA="
+https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields={VoucherType,GenerationNumber,Password,PersonalIdentificationNumber,AutoGeneratePersonalIdentificationNumber,AutoGeneratePassword,ExpiryDate,Available,Reason}
+Request Formats- 
+{
+  "voucherType": {
+    "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
+    "key": "aƒJj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l¥DYg8=",
+    "name": "Late Arrival"
+  },
+  "generationNumber": 2,
+  "password": null,
+  "personalIdentificationNumber": null,
+  "autoGeneratePersonalIdentificationNumber": {
+    "length": 4
+  },
+  "autoGeneratePassword": {
+    "length": 6
+  },
+  "expiryDate": "2024-11-15T12:38:36.2630739Z",
+  "available": 20,
+  "reason": "Sample reason for generating this voucher"
 }
+
+
+Response getting
+[
+    {
+        "href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapf1gXBiGxv%C2%A5O0vzgJp9mWCs=",
+        "expiryDate": "2024-11-16 12:38:59",
+        "password": "GXPXXV",
+        "personalIdentificationNumber": "1466",
+        "available": 1
+    },
+    {
+        "href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapSxSScKPr6W7gWbODtmtO2I=",
+        "expiryDate": "2024-11-16 12:38:59",
+        "password": "HPVUAH",
+        "personalIdentificationNumber": "8080",
+        "available": 1
+    }
+]
