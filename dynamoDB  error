@@ -1,0 +1,14 @@
+Test Event Name
+test1
+
+Response
+{
+  "statusCode": 500,
+  "body": "{\"error\": \"Could not retrieve data from DynamoDB.\"}"
+}
+
+Function Logs
+START RequestId: d7c3eaae-4ad3-4af2-9c78-55844e211c8d Version: $LATEST
+Error retrieving data: User: arn:aws:sts::381492312030:assumed-role/Pax-flgiht-voucher-generation-role-5xn8pr6h/Pax-flgiht-voucher-generation is not authorized to perform: dynamodb:Scan on resource: arn:aws:dynamodb:ca-central-1:381492312030:table/VoucherDetails because no identity-based policy allows the dynamodb:Scan action
+END RequestId: d7c3eaae-4ad3-4af2-9c78-55844e211c8d
+REPORT RequestId: d7c3eaae-4ad3-4af2-9c78-55844e211c8d	Duration: 2858.24 ms	Billed Duration: 2859 ms	Memory Size: 128 MB	Max Memory Used: 78 MB	Init Duration: 303.13 ms
