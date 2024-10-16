@@ -11,11 +11,11 @@ Response
 }
 
 Function Logs
-START RequestId: f59fcc2f-42d8-485b-b0db-4f12393b480a Version: $LATEST
+START RequestId: b545e118-dc14-47a2-9e77-946732d30c1a Version: $LATEST
 Retrieving data from DynamoDB...
-Retrieved vouchers: [{'ArrivalCity': 'SZK', 'PersonalIdentificationNumber': 'null', 'VoucherValue': '$63CAD', 'DepartureCity': '6BK', 'PassengerFirstName': 'David', 'ArrivalAirportCode': 'ENO', 'PassengerLastName': 'Jones', 'PNR': 'HN6FG', 'VoucherID': 'none', 'VoucherExpiryDate': '2024-11-04', 'FlightStatus': 'Cancelled', 'VoucherCode': 'XLFS0AVL', 'DepartureAirportCode': 'NAU', 'FlightNumber': '5N5915'}]
+Retrieved vouchers: [{'ArrivalCity': 'SZK', 'personalIdentificationNumber': 'null', 'VoucherValue': '$63CAD', 'DepartureCity': '6BK', 'PassengerFirstName': 'David', 'ArrivalAirportCode': 'ENO', 'PassengerLastName': 'Jones', 'PNR': 'HN6FG', 'VoucherID': 'none', 'VoucherExpiryDate': '2024-11-04', 'FlightStatus': 'Cancelled', 'VoucherCode': 'XLFS0AVL', 'DepartureAirportCode': 'NAU', 'FlightNumber': '5N5915'}]
 Error generating voucher for PNR HN6FG: {
 "message": "PersonalIdentificationNumber is required."
 }
-END RequestId: f59fcc2f-42d8-485b-b0db-4f12393b480a
-REPORT RequestId: f59fcc2f-42d8-485b-b0db-4f12393b480a	Duration: 3800.65 ms	Billed Duration: 3801 ms	Memory Size: 128 MB	Max Memory Used: 80 MB	Init Duration: 281.80 ms
+END RequestId: b545e118-dc14-47a2-9e77-946732d30c1a
+REPORT RequestId: b545e118-dc14-47a2-9e77-946732d30c1a	Duration: 643.40 ms	Billed Duration: 644 ms	Memory Size: 128 MB	Max Memory Used: 80 
