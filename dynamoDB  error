@@ -1,24 +1,25 @@
-try:
-    # Make the API request
-    with urllib.request.urlopen(req) as response:
-        response_body = response.read()
-        response_data = json.loads(response_body)
-        # Log the successful response
-        print(f"Successfully generated voucher for PNR {voucher['PNR']}: {response_data}")
-        # Update the DynamoDB entry here (code for this part should be included)
-except urllib.error.HTTPError as e:
-    error_message = e.read().decode('utf-8')
-    print(f"Error generating voucher for PNR {voucher['PNR']}: {error_message}")  # Log the error response
-    return {
-        'statusCode': e.code,
-        'body': {
-            "error": "An error occurred while processing your request.",
-            "details": error_message
-        }
-    }
-except Exception as e:
-    print(f"An unexpected error occurred for PNR {voucher['PNR']}: {str(e)}")
-    return {
-        'statusCode': 500,
-        'body': str(e)
-    }
+Test Event Name
+test1
+
+Response
+{
+  "errorMessage": "Syntax error in module 'lambda_function': unindent does not match any outer indentation level (lambda_function.py, line 78)",
+  "errorType": "Runtime.UserCodeSyntaxError",
+  "requestId": "",
+  "stackTrace": [
+    "  File \"/var/task/lambda_function.py\" Line 78\n                     print(f\"Successfully generated voucher for PNR {voucher['PNR']}: {response_data}\")\n"
+  ]
+}
+
+Function Logs
+[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': unindent does not match any outer indentation level (lambda_function.py, line 78)
+Traceback (most recent call last):
+  File "/var/task/lambda_function.py" Line 78
+                     print(f"Successfully generated voucher for PNR {voucher['PNR']}: {response_data}")INIT_REPORT Init Duration: 150.84 ms	Phase: init	Status: error	Error Type: Runtime.UserCodeSyntaxError
+[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': unindent does not match any outer indentation level (lambda_function.py, line 78)
+Traceback (most recent call last):
+  File "/var/task/lambda_function.py" Line 78
+                     print(f"Successfully generated voucher for PNR {voucher['PNR']}: {response_data}")INIT_REPORT Init Duration: 1475.91 ms	Phase: invoke	Status: error	Error Type: Runtime.UserCodeSyntaxError
+START RequestId: a0fefd20-7929-4169-9d58-5dd0740ae8eb Version: $LATEST
+END RequestId: a0fefd20-7929-4169-9d58-5dd0740ae8eb
+REPORT RequestId: a0fefd20-7929-4169-9d58-5dd0740ae8eb	Duration: 1487.05 ms	Billed Duration: 1488 ms	Memory Size: 128 MB	Max Memory Used: 42 MB	Status: error	Error Type: Runtime.UserCodeSyntaxError
