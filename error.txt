@@ -1,27 +1,46 @@
-Test Event Name
-test1
-
-Response
-{
-  "statusCode": 200,
-  "body": [
-    {
-      "href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapR5C9x8cI58KV4Pv2x7rZg4=",
-      "key": "4Ny63MjEXGYY85HIOcHapR5C9x8cI58KV4Pv2x7rZg4=",
-      "serialNumber": "CFE9UWXXSL",
-      "passengerName": "Not Assigned",
-      "value": 1000,
-      "currency": null,
-      "expiryDate": "2024-12-16 11:58:59"
+# Assuming the API requires this format
+payload = {
+    "voucherType": {
+        "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
+        "key": os.environ['VOUCHER_KEY'],
+        "name": "Late Arrival"
     },
-    {
-      "href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapcOCFOW8liBM97QrNw5kvVQ=",
-      "key": "4Ny63MjEXGYY85HIOcHapcOCFOW8liBM97QrNw5kvVQ=",
-      "serialNumber": "WLXI8ZEENN",
-      "passengerName": "Not Assigned",
-      "value": 1000,
-      "currency": null,
-      "expiryDate": "2024-12-16 11:58:59"
-    }
-  ]
+    "generationNumber": 2,
+    "password": None,
+    "personalIdentificationNumber": None,
+    "autoGeneratePersonalIdentificationNumber": {
+        "length": 4
+    },
+    "autoGeneratePassword": {
+        "length": 6
+    },
+    "expiryDate": expiry_date,
+    "available": 20,
+    "reason": "Sample reason for generating this voucher",
+    "bookingWindow": "none",
+    "voucherValue": 60,
+    "eligiblePassengers": [
+        {
+            "firstName": "Alice",
+            "lastName": "Smit",
+            "pnr": "PNR123"
+        },
+        {
+            "firstName": "Bob",
+            "lastName": "Johnson",
+            "pnr": "PNR456"
+        }
+    ],
+    "passengers": [  # Include passengers here if the API supports this
+        {
+            "firstName": "Alice",
+            "lastName": "Smit",
+            "pnr": "PNR123"
+        },
+        {
+            "firstName": "Bob",
+            "lastName": "Johnson",
+            "pnr": "PNR456"
+        }
+    ]
 }
