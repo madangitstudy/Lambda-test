@@ -9,7 +9,7 @@ def lambda_handler(event, context):
     url = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields={fields}"
 
     # Define the expiry date (30 days from now)
-    expiry_date = (datetime.utcnow() + timedelta(days=30)).isoformat() + "Z"
+    expiry_date = (datetime.utcnow() + timedelta(days=60)).isoformat() + "Z"
 
     # Construct the payload
     payload = {
