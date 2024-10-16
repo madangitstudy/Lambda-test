@@ -1,14 +1,76 @@
-Test Event Name
-test1
+import json
+import urllib.request
+import base64
+import os
+import boto3
+import logging
+from datetime import datetime, timedelta
 
-Response
-{
-  "statusCode": 500,
-  "body": "{\"error\": \"Could not retrieve data from DynamoDB.\"}"
-}
+# Initialize logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
-Function Logs
-START RequestId: d7c3eaae-4ad3-4af2-9c78-55844e211c8d Version: $LATEST
-Error retrieving data: User: arn:aws:sts::381492312030:assumed-role/Pax-flgiht-voucher-generation-role-5xn8pr6h/Pax-flgiht-voucher-generation is not authorized to perform: dynamodb:Scan on resource: arn:aws:dynamodb:ca-central-1:381492312030:table/VoucherDetails because no identity-based policy allows the dynamodb:Scan action
-END RequestId: d7c3eaae-4ad3-4af2-9c78-55844e211c8d
-REPORT RequestId: d7c3eaae-4ad3-4af2-9c78-55844e211c8d	Duration: 2858.24 ms	Billed Duration: 2859 ms	Memory Size: 128 MB	Max Memory Used: 78 MB	Init Duration: 303.13 ms
+# Initialize DynamoDB client
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('VoucherDetails')
+
+def lambda_handler(event, context):
+    try:
+        # Retrieve data from DynamoDB
+        logger.info("Retrieving data from DynamoDB...")
+        response = table.scan()
+        retrieved_vouchers = response['Items']
+        logger.info(f"Retrieved vouchers: {retrieved_vouchers}")
+
+        # Placeholder for newly generated vouchers
+        generated_vouchers = []
+
+        # Logic to check for ungenerated vouchers and generate them
+        for voucher in retrieved_vouchers:
+            if 'VoucherCode' not in voucher or voucher['VoucherCode'] is None:
+                # Generate the voucher
+                new_voucher_code = generate_voucher_code()  # Implement your code generation logic here
+                expiry_date = (datetime.utcnow() + timedelta(days=60)).strftime('%Y-%m-%d %H:%M:%S')
+
+                # Update the DynamoDB entry
+                table.update_item(
+                    Key={'PNR': voucher['PNR']},
+                    UpdateExpression='SET VoucherCode = :val1, VoucherExpiryDate = :val2',
+                    ExpressionAttributeValues={
+                        ':val1': new_voucher_code,
+                        ':val2': expiry_date
+                    }
+                )
+
+                # Add to generated vouchers list
+                generated_vouchers.append({
+                    'PNR': voucher['PNR'],
+                    'VoucherCode': new_voucher_code,
+                    'ExpiryDate': expiry_date
+                })
+
+        # Construct the response
+        if generated_vouchers:
+            return {
+                'statusCode': 200,
+                'body': json.dumps({
+                    'message': 'Vouchers processed and updated.',
+                    'generatedVouchers': generated_vouchers
+                })
+            }
+        else:
+            return {
+                'statusCode': 200,
+                'body': json.dumps({'message': 'No new vouchers to generate.'})
+            }
+
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'error': 'Could not retrieve or process data from DynamoDB.'})
+        }
+
+def generate_voucher_code():
+    # Implement your logic to generate a unique voucher code
+    return "VOUCHER" + str(datetime.utcnow().timestamp())
