@@ -1,24 +1,115 @@
-Test Event Name
-test1
+import json
+import urllib.request
+import base64
+import os
+from datetime import datetime, timedelta
+import boto3
 
-Response
-{
-  "errorMessage": "Syntax error in module 'lambda_function': '{' was never closed (lambda_function.py, line 92)",
-  "errorType": "Runtime.UserCodeSyntaxError",
-  "requestId": "",
-  "stackTrace": [
-    "  File \"/var/task/lambda_function.py\" Line 92\n                            ExpressionAttributeValues={\n"
-  ]
-}
+def lambda_handler(event, context):
+    try:
+        # Initialize DynamoDB resource
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table('VoucherDetails')
 
-Function Logs
-[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': '{' was never closed (lambda_function.py, line 92)
-Traceback (most recent call last):
-  File "/var/task/lambda_function.py" Line 92
-                            ExpressionAttributeValues={INIT_REPORT Init Duration: 160.50 ms	Phase: init	Status: error	Error Type: Runtime.UserCodeSyntaxError
-[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': '{' was never closed (lambda_function.py, line 92)
-Traceback (most recent call last):
-  File "/var/task/lambda_function.py" Line 92
-                            ExpressionAttributeValues={INIT_REPORT Init Duration: 1496.76 ms	Phase: invoke	Status: error	Error Type: Runtime.UserCodeSyntaxError
-START RequestId: 98e55856-1693-49bc-8482-998821eaf523 Version: $LATEST
-END RequestId: 98e55856-1693-49bc-8482-998821eaf523
+        # Retrieve vouchers from DynamoDB
+        print("Retrieving data from DynamoDB...")
+        retrieved_vouchers = table.scan().get('Items', [])
+        print("Retrieved vouchers:", retrieved_vouchers)
+
+        # Check if there are vouchers that need to be generated
+        vouchers_to_generate = []
+        for voucher in retrieved_vouchers:
+            if voucher.get('VoucherID') == 'none':  # Check if VoucherID is 'none'
+                vouchers_to_generate.append(voucher)
+
+        if not vouchers_to_generate:
+            return {
+                'statusCode': 200,
+                'body': json.dumps({'message': 'No new vouchers to generate.'})
+            }
+
+        # Define the URL for the API
+        url = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?{fields}"
+
+        # Define the expiry date (60 days from now) and format it as 'YYYY-MM-DD HH:mm:ss'
+        expiry_date = (datetime.utcnow() + timedelta(days=60)).strftime('%Y-%m-%d %H:%M:%S')
+
+        # Process each voucher that needs to be generated
+        for voucher in vouchers_to_generate:
+            # Handle missing or 'null' personalIdentificationNumber
+            pin = voucher.get('personalIdentificationNumber')  # Retrieve the value from DynamoDB
+            
+            if not pin or pin == 'null':
+                pin = 'defaultPIN'  # Assign a fallback value if it's 'null' or missing
+            
+            # Prepare the payload with correct field names
+            payload = {
+                "voucherType": {
+                    "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
+                    "key": os.environ['VOUCHER_KEY'],
+                    "name": "Late Arrival"
+                },
+                "generationNumber": 2,
+                "expiryDate": expiry_date,
+                "available": 20,
+                "reason": "Sample reason for generating this voucher",
+                "bookingWindow": "none",
+                "voucherValue": 60,
+                "eligiblePassengers": [
+                    {
+                        "firstName": voucher['PassengerFirstName'],
+                        "lastName": voucher['PassengerLastName'],
+                        "pnr": voucher['PNR'],
+                        "PersonalIdentificationNumber": pin  # Ensure this field is passed correctly
+                    }
+                ],
+            }
+
+            # Create a request object
+            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), method='POST')
+            req.add_header('Content-Type', 'application/json')
+
+            # Add Basic Authentication
+            username = os.environ['USERNAME']
+            password = os.environ['PASSWORD']
+            credentials = f"{username}:{password}"
+            b64_credentials = base64.b64encode(credentials.encode()).decode()
+            req.add_header('Authorization', f'Basic {b64_credentials}')
+
+            # Make the API request to generate the voucher
+            try:
+                # Make the API request
+                with urllib.request.urlopen(req) as response:
+                    response_body = response.read()
+                    response_data = json.loads(response_body)
+                    # Log the successful response
+                    print(f"Successfully generated voucher for PNR {voucher['PNR']}: {response_data}")
+                    
+                    # Update the DynamoDB entry with generated VoucherID
+                    table.update_item(
+                        Key={'PNR': voucher['PNR']},
+                        UpdateExpression="SET VoucherID = :vid, VoucherCode = :vcode, VoucherExpiryDate = :vexp",
+                        ExpressionAttributeValues={
+                            ':vid': response_data['voucherID'],  # Use the actual response field here
+                            ':vcode': response_data['voucherCode'],  # Use the actual response field here
+                            ':vexp': expiry_date  # The calculated expiry date
+                        }
+                    )
+
+            except urllib.error.HTTPError as e:
+                error_message = e.read().decode('utf-8')
+                print(f"Error generating voucher for PNR {voucher['PNR']}: {error_message}")  # Log the error response
+                return {
+                    'statusCode': e.code,
+                    'body': {
+                        "error": "An error occurred while processing your request.",
+                        "details": error_message
+                    }
+                }
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
+        return {
+            'statusCode': 500,
+            'body': str(e)
+        }
