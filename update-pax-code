@@ -13,52 +13,52 @@ def lambda_handler(event, context):
 
     # Construct the payload
     # Assuming the API requires this format
-payload = {
-    "voucherType": {
-        "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
-        "key": os.environ['VOUCHER_KEY'],
-        "name": "Late Arrival"
-    },
-    "generationNumber": 2,
-    "password": None,
-    "personalIdentificationNumber": None,
-    "autoGeneratePersonalIdentificationNumber": {
-        "length": 4
-    },
-    "autoGeneratePassword": {
-        "length": 6
-    },
-    "expiryDate": expiry_date,
-    "available": 20,
-    "reason": "Sample reason for generating this voucher",
-    "bookingWindow": "none",
-    "voucherValue": 60,
-    "eligiblePassengers": [
-        {
-            "firstName": "Alice",
-            "lastName": "Smit",
-            "pnr": "PNR123"
+    payload = {
+        "voucherType": {
+            "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
+            "key": os.environ['VOUCHER_KEY'],
+            "name": "Late Arrival"
         },
-        {
-            "firstName": "Bob",
-            "lastName": "Johnson",
-            "pnr": "PNR456"
-        }
-    ],
-    "passengers": [  # Include passengers here if the API supports this
-        {
-            "firstName": "Alice",
-            "lastName": "Smit",
-            "pnr": "PNR123"
+        "generationNumber": 2,
+        "password": None,
+        "personalIdentificationNumber": None,
+        "autoGeneratePersonalIdentificationNumber": {
+            "length": 4
         },
-        {
-            "firstName": "Bob",
-            "lastName": "Johnson",
-            "pnr": "PNR456"
-        }
-    ]
-}
-   
+        "autoGeneratePassword": {
+            "length": 6
+        },
+        "expiryDate": expiry_date,
+        "available": 20,
+        "reason": "Sample reason for generating this voucher",
+        "bookingWindow": "none",
+        "voucherValue": 60,
+        "eligiblePassengers": [
+            {
+                "firstName": "Alice",
+                "lastName": "Smit",
+                "pnr": "PNR123"
+            },
+            {
+                "firstName": "Bob",
+                "lastName": "Johnson",
+                "pnr": "PNR456"
+            }
+        ],
+        "passengers": [  # Include passengers here if the API supports this
+            {
+                "firstName": "Alice",
+                "lastName": "Smit",
+                "pnr": "PNR123"
+            },
+            {
+                "firstName": "Bob",
+                "lastName": "Johnson",
+                "pnr": "PNR456"
+            }
+        ]
+    }
+
     # Create a request object
     req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), method='POST')
     req.add_header('Content-Type', 'application/json')
@@ -91,15 +91,3 @@ payload = {
             'statusCode': 500,
             'body': str(e)
         }
-Test Event Name
-test1
-
-Response
-{
-  "errorMessage": "Syntax error in module 'lambda_function': unexpected indent (lambda_function.py, line 63)",
-  "errorType": "Runtime.UserCodeSyntaxError",
-  "requestId": "",
-  "stackTrace": [
-    "  File \"/var/task/lambda_function.py\" Line 63\n        req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), method='POST')\n"
-  ]
-}
