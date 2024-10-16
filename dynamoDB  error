@@ -37,10 +37,12 @@ def lambda_handler(event, context):
         # Process each voucher that needs to be generated
         for voucher in vouchers_to_generate:
             # Handle missing or 'null' personalIdentificationNumber
-            pin = voucher.get('personalIdentificationNumber', 'defaultPIN')
-            if pin == 'null':
-                pin = 'defaultPIN'  # Assign a fallback value
-
+            pin = voucher.get('personalIdentificationNumber')  # Retrieve the value from DynamoDB
+            
+            if not pin or pin == 'null':
+                pin = 'defaultPIN'  # Assign a fallback value if it's 'null' or missing
+            
+            # Prepare the payload with correct field names
             payload = {
                 "voucherType": {
                     "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
@@ -58,7 +60,7 @@ def lambda_handler(event, context):
                         "firstName": voucher['PassengerFirstName'],
                         "lastName": voucher['PassengerLastName'],
                         "pnr": voucher['PNR'],
-                        "personalIdentificationNumber": pin  # Use the valid or default PIN
+                        "PersonalIdentificationNumber": pin  # Ensure this field is passed correctly
                     }
                 ],
             }
@@ -83,53 +85,10 @@ def lambda_handler(event, context):
                     # Log the successful response
                     print(f"Successfully generated voucher for PNR {voucher['PNR']}: {response_data}")
                     
-                    # Update the DynamoDB entry with generated VoucherID (add this part)
+                    # Update the DynamoDB entry with generated VoucherID
                     table.update_item(
                         Key={'PNR': voucher['PNR']},
                         UpdateExpression="SET VoucherID = :vid, VoucherCode = :vcode, VoucherExpiryDate = :vexp",
                         ExpressionAttributeValues={
                             ':vid': response_data['voucherID'],  # Use the actual response field here
-                            ':vcode': response_data['voucherCode'],  # Use the actual response field here
-                            ':vexp': expiry_date  # The calculated expiry date
-                        }
-                    )
-
-            except urllib.error.HTTPError as e:
-                error_message = e.read().decode('utf-8')
-                print(f"Error generating voucher for PNR {voucher['PNR']}: {error_message}")  # Log the error response
-                return {
-                    'statusCode': e.code,
-                    'body': {
-                        "error": "An error occurred while processing your request.",
-                        "details": error_message
-                    }
-                }
-
-    except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}")
-        return {
-            'statusCode': 500,
-            'body': str(e)
-        }
-
-est Event Name
-test1
-
-Response
-{
-  "statusCode": 400,
-  "body": {
-    "error": "An error occurred while processing your request.",
-    "details": "{\r\n  \"message\": \"PersonalIdentificationNumber is required.\"\r\n}"
-  }
-}
-
-Function Logs
-START RequestId: 9d22552a-684f-42a8-bb88-99f55788bff6 Version: $LATEST
-Retrieving data from DynamoDB...
-Retrieved vouchers: [{'ArrivalCity': 'SZK', 'personalIdentificationNumber': 'null', 'VoucherValue': '$63CAD', 'DepartureCity': '6BK', 'PassengerFirstName': 'David', 'ArrivalAirportCode': 'ENO', 'PassengerLastName': 'Jones', 'PNR': 'HN6FG', 'VoucherID': 'none', 'VoucherExpiryDate': '2024-11-04', 'FlightStatus': 'Cancelled', 'VoucherCode': 'XLFS0AVL', 'DepartureAirportCode': 'NAU', 'FlightNumber': '5N5915'}]
-Error generating voucher for PNR HN6FG: {
-"message": "PersonalIdentificationNumber is required."
-}
-END RequestId: 9d22552a-684f-42a8-bb88-99f55788bff6
-REPORT RequestId: 9d22552a-684f-42a8-bb88-99f55788bff6	Duration: 3746.65 ms	Billed Duration: 3747 ms	Memory Size: 128 MB	Max Memory Used: 80 MB	Init Duration: 268.82 ms
+                            ':vcode': response_data['voucherCode'],  # Use the actual
