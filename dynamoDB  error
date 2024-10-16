@@ -1,98 +1,21 @@
-import json
-import urllib.request
-import base64
-import os
-from datetime import datetime, timedelta
-import boto3
+Test Event Name
+test1
 
-def lambda_handler(event, context):
-    try:
-        # Initialize DynamoDB resource
-        dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table('VoucherDetails')
+Response
+{
+  "statusCode": 400,
+  "body": {
+    "error": "An error occurred while processing your request.",
+    "details": "{\r\n  \"message\": \"PersonalIdentificationNumber is required.\"\r\n}"
+  }
+}
 
-        # Retrieve vouchers from DynamoDB
-        print("Retrieving data from DynamoDB...")
-        retrieved_vouchers = table.scan().get('Items', [])
-        print("Retrieved vouchers:", retrieved_vouchers)
-
-        # Check if there are vouchers that need to be generated
-        vouchers_to_generate = []
-        for voucher in retrieved_vouchers:
-            if voucher.get('VoucherID') == 'none':  # Check if VoucherID is 'none'
-                vouchers_to_generate.append(voucher)
-
-        if not vouchers_to_generate:
-            return {
-                'statusCode': 200,
-                'body': json.dumps({'message': 'No new vouchers to generate.'})
-            }
-
-        # Define the URL for the API
-        url = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?{fields}"
-
-        # Define the expiry date (60 days from now) and format it as 'YYYY-MM-DD HH:mm:ss'
-        expiry_date = (datetime.utcnow() + timedelta(days=60)).strftime('%Y-%m-%d %H:%M:%S')
-
-        # Process each voucher that needs to be generated
-        for voucher in vouchers_to_generate:
-            payload = {
-                "voucherType": {
-                    "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
-                    "key": os.environ['VOUCHER_KEY'],
-                    "name": "Late Arrival"
-                },
-                "generationNumber": 2,
-                "expiryDate": expiry_date,
-                "available": 20,
-                "reason": "Sample reason for generating this voucher",
-                "bookingWindow": "none",
-                "voucherValue": 60,
-                "eligiblePassengers": [
-                    {
-                        "firstName": voucher['PassengerFirstName'],
-                        "lastName": voucher['PassengerLastName'],
-                        "pnr": voucher['PNR'],
-                        "PersonalIdentificationNumber": voucher.get('PersonalIdentificationNumber', 'defaultPIN')  # Add PersonalIdentificationNumber or a default value
-                    }
-                ],
-            }
-
-            # Create a request object
-            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), method='POST')
-            req.add_header('Content-Type', 'application/json')
-
-            # Add Basic Authentication
-            username = os.environ['USERNAME']
-            password = os.environ['PASSWORD']
-            credentials = f"{username}:{password}"
-            b64_credentials = base64.b64encode(credentials.encode()).decode()
-            req.add_header('Authorization', f'Basic {b64_credentials}')
-
-            # Make the API request to generate the voucher
-            try:
-                # Make the API request
-                with urllib.request.urlopen(req) as response:
-                    response_body = response.read()
-                    response_data = json.loads(response_body)
-                    # Log the successful response
-                    print(f"Successfully generated voucher for PNR {voucher['PNR']}: {response_data}")
-                    # Update the DynamoDB entry here (code for this part should be included)
-
-            except urllib.error.HTTPError as e:
-                error_message = e.read().decode('utf-8')
-                print(f"Error generating voucher for PNR {voucher['PNR']}: {error_message}")  # Log the error response
-                return {
-                    'statusCode': e.code,
-                    'body': {
-                        "error": "An error occurred while processing your request.",
-                        "details": error_message
-                    }
-                }
-
-    except Exception as e:
-        print(f"An unexpected error occurred for PNR {voucher['PNR']}: {str(e)}")
-        return {
-            'statusCode': 500,
-            'body': str(e)
-        }
+Function Logs
+START RequestId: d477a8a6-49d3-4716-996d-e4b9a6371d1d Version: $LATEST
+Retrieving data from DynamoDB...
+Retrieved vouchers: [{'ArrivalCity': 'SZK', 'VoucherValue': '$63CAD', 'DepartureCity': '6BK', 'PassengerFirstName': 'David', 'ArrivalAirportCode': 'ENO', 'PassengerLastName': 'Jones', 'PNR': 'HN6FG', 'VoucherID': 'none', 'VoucherExpiryDate': '2024-11-04', 'FlightStatus': 'Cancelled', 'VoucherCode': 'XLFS0AVL', 'DepartureAirportCode': 'NAU', 'FlightNumber': '5N5915'}]
+Error generating voucher for PNR HN6FG: {
+"message": "PersonalIdentificationNumber is required."
+}
+END RequestId: d477a8a6-49d3-4716-996d-e4b9a6371d1d
+REPORT RequestId: d477a8a6-49d3-4716-996d-e4b9a6371d1d	Duration: 3843.05 ms	Billed Duration: 3844 ms	Memory Size: 128 MB	Max Memory Used: 80 MB	Init Duration: 278.29 ms
