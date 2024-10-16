@@ -1,16 +1,23 @@
-Test Event Name
-Voucher-test
+# Logic to check for ungenerated vouchers and generate them
+for voucher in retrieved_vouchers:
+    if 'VoucherCode' not in voucher or voucher['VoucherCode'] is None or voucher['VoucherCode'] == "":
+        # Generate the voucher
+        new_voucher_code = generate_voucher_code()  # Implement your code generation logic here
+        expiry_date = (datetime.utcnow() + timedelta(days=60)).strftime('%Y-%m-%d %H:%M:%S')
 
-Response
-{
-  "statusCode": 200,
-  "body": "{\"message\": \"No new vouchers to generate.\"}"
-}
+        # Update the DynamoDB entry
+        table.update_item(
+            Key={'PNR': voucher['PNR']},
+            UpdateExpression='SET VoucherCode = :val1, VoucherExpiryDate = :val2',
+            ExpressionAttributeValues={
+                ':val1': new_voucher_code,
+                ':val2': expiry_date
+            }
+        )
 
-Function Logs
-[INFO]	2024-10-16T14:07:31.057Z		Found credentials in environment variables.
-START RequestId: 7b073d78-3722-4859-b26f-472095985eab Version: $LATEST
-[INFO]	2024-10-16T14:07:31.160Z	7b073d78-3722-4859-b26f-472095985eab	Retrieving data from DynamoDB...
-[INFO]	2024-10-16T14:07:31.704Z	7b073d78-3722-4859-b26f-472095985eab	Retrieved vouchers: [{'ArrivalCity': 'SZK', 'VoucherValue': '$63CAD', 'DepartureCity': '6BK', 'PassengerFirstName': 'David', 'ArrivalAirportCode': 'ENO', 'PassengerLastName': 'Jones', 'PNR': 'HN6FG', 'VoucherID': 'r8EjKrEBnc', 'VoucherExpiryDate': '2024-11-04', 'FlightStatus': 'Cancelled', 'VoucherCode': 'XLFS0AVL', 'DepartureAirportCode': 'NAU', 'FlightNumber': '5N5915'}]
-END RequestId: 7b073d78-3722-4859-b26f-472095985eab
-REPORT RequestId: 7b073d78-3722-4859-b26f-472095985eab	Duration: 583.57 ms	Billed Duration: 584 ms	Memory Size: 128 MB	Max Memory Used: 78 MB	Init Duration: 496.50 ms
+        # Add to generated vouchers list
+        generated_vouchers.append({
+            'PNR': voucher['PNR'],
+            'VoucherCode': new_voucher_code,
+            'ExpiryDate': expiry_date
+        })
