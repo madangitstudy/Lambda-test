@@ -36,6 +36,11 @@ def lambda_handler(event, context):
 
         # Process each voucher that needs to be generated
         for voucher in vouchers_to_generate:
+            # Handle missing or 'null' PersonalIdentificationNumber
+            pin = voucher.get('PersonalIdentificationNumber', 'defaultPIN')
+            if pin == 'null':
+                pin = 'defaultPIN'  # Assign a fallback value
+
             payload = {
                 "voucherType": {
                     "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
@@ -53,7 +58,7 @@ def lambda_handler(event, context):
                         "firstName": voucher['PassengerFirstName'],
                         "lastName": voucher['PassengerLastName'],
                         "pnr": voucher['PNR'],
-                        "PersonalIdentificationNumber": voucher.get('PersonalIdentificationNumber', 'defaultPIN')  # Add PersonalIdentificationNumber or a default value
+                        "PersonalIdentificationNumber": pin  # Use the valid or default PIN
                     }
                 ],
             }
@@ -77,7 +82,17 @@ def lambda_handler(event, context):
                     response_data = json.loads(response_body)
                     # Log the successful response
                     print(f"Successfully generated voucher for PNR {voucher['PNR']}: {response_data}")
-                    # Update the DynamoDB entry here (code for this part should be included)
+                    
+                    # Update the DynamoDB entry with generated VoucherID (add this part)
+                    table.update_item(
+                        Key={'PNR': voucher['PNR']},
+                        UpdateExpression="SET VoucherID = :vid, VoucherCode = :vcode, VoucherExpiryDate = :vexp",
+                        ExpressionAttributeValues={
+                            ':vid': response_data['voucherID'],  # Use the actual response field here
+                            ':vcode': response_data['voucherCode'],  # Use the actual response field here
+                            ':vexp': expiry_date  # The calculated expiry date
+                        }
+                    )
 
             except urllib.error.HTTPError as e:
                 error_message = e.read().decode('utf-8')
@@ -91,30 +106,8 @@ def lambda_handler(event, context):
                 }
 
     except Exception as e:
-        print(f"An unexpected error occurred for PNR {voucher['PNR']}: {str(e)}")
+        print(f"An unexpected error occurred: {str(e)}")
         return {
             'statusCode': 500,
             'body': str(e)
         }
-
-Test Event Name
-test1
-
-Response
-{
-  "statusCode": 400,
-  "body": {
-    "error": "An error occurred while processing your request.",
-    "details": "{\r\n  \"message\": \"PersonalIdentificationNumber is required.\"\r\n}"
-  }
-}
-
-Function Logs
-START RequestId: a2fc2f9f-6d21-4090-83a6-789a4bfc9fbf Version: $LATEST
-Retrieving data from DynamoDB...
-Retrieved vouchers: [{'ArrivalCity': 'SZK', 'PersonalIdentificationNumber': 'null', 'VoucherValue': '$63CAD', 'DepartureCity': '6BK', 'PassengerFirstName': 'David', 'ArrivalAirportCode': 'ENO', 'PassengerLastName': 'Jones', 'PNR': 'HN6FG', 'VoucherID': 'none', 'VoucherExpiryDate': '2024-11-04', 'FlightStatus': 'Cancelled', 'VoucherCode': 'XLFS0AVL', 'DepartureAirportCode': 'NAU', 'FlightNumber': '5N5915'}]
-Error generating voucher for PNR HN6FG: {
-"message": "PersonalIdentificationNumber is required."
-}
-END RequestId: a2fc2f9f-6d21-4090-83a6-789a4bfc9fbf
-REPORT RequestId: a2fc2f9f-6d21-4090-83a6-789a4bfc9fbf	Duration: 4093.13 ms	Billed Duration: 4094 ms	Memory Size: 128 MB	Max Memory Used: 80 MB	Init Duration: 278.34 ms
