@@ -1,12 +1,21 @@
-Test Event Name
-Voucher-test
+# Check if voucher code is empty (instead of VoucherID)
+if not item.get('VoucherCode'):  # Check for VoucherCode being empty
+    vouchers_to_generate.append(item)
 
-Response
-{
-  "statusCode": 200,
-  "body": "{\"message\": \"Vouchers processed and updated.\"}"
-}
-
-Function Logs
-START RequestId: aac54a03-259c-4013-9f7a-7e58acf3dd13 Version: $LATEST
-Items retrieved from DynamoDB: [{'ArrivalCity': '', 'VoucherValue': Decimal('0'), 'DepartureCity': '', 'PassengerFirstName': '', 'ArrivalAirportCode': '', 'PassengerLastName': '', 'Email': '', 'PNR': 'ABC123', 'VoucherID': 'V1234', 'VoucherExpiryDate': '', 'FlightStatus': '', 'VoucherCode': '', 'DepartureAirportCode': '', 'FlightNumber': ''}]
+# In the update step, add a print statement to debug
+for voucher in generated_vouchers:
+    print(f"Updating DynamoDB for PNR: {voucher['PNR']} with VoucherCode: {voucher['VoucherCode']}")
+    try:
+        table.update_item(
+            Key={
+                'PNR': voucher['PNR']
+            },
+            UpdateExpression="SET VoucherID = :vid, VoucherCode = :vcode, VoucherExpiryDate = :vexp",
+            ExpressionAttributeValues={
+                ':vid': voucher['VoucherID'],
+                ':vcode': voucher['VoucherCode'],
+                ':vexp': voucher['VoucherExpiryDate']
+            }
+        )
+    except ClientError as e:
+        print(f"Error updating voucher in DynamoDB: {e.response['Error']['Message']}")
