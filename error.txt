@@ -19,8 +19,8 @@ def lambda_handler(event, context):
         items = response.get('Items', [])
         
         for item in items:
-            # Check if voucher code or ID is not set
-            if not item.get('VoucherID'):
+            # Check if VoucherCode is not set (empty or None)
+            if not item.get('VoucherCode'):
                 vouchers_to_generate.append(item)
 
     except ClientError as e:
@@ -67,6 +67,8 @@ def lambda_handler(event, context):
                 }
             ]
         }
+
+        print(f"Sending payload: {json.dumps(payload)}")  # Log the payload for debugging
         
         # Create a request object
         req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), method='POST')
@@ -80,11 +82,12 @@ def lambda_handler(event, context):
         req.add_header('Authorization', f'Basic {b64_credentials}')
 
         try:
-            # Make the API request
-            with urllib.request.urlopen(req) as response:
+            # Make the API request with a timeout of 10 seconds
+            with urllib.request.urlopen(req, timeout=10) as response:
                 response_body = response.read()
                 response_data = json.loads(response_body)
                 generated_vouchers.append({
+                    'PNR': voucher['PNR'],  # Include PNR to use as key for update
                     'VoucherID': response_data[0]['key'],  # Example of how to extract the VoucherID
                     'VoucherCode': response_data[0]['serialNumber'],  # Example of how to extract the VoucherCode
                     'VoucherExpiryDate': expiry_date
@@ -93,9 +96,14 @@ def lambda_handler(event, context):
         except urllib.error.HTTPError as e:
             error_message = e.read().decode('utf-8')
             print(f"Error generating voucher: {error_message}")
+        except urllib.error.URLError as e:
+            print(f"URL error: {e.reason}")
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
 
     # Update DynamoDB with generated vouchers
     for voucher in generated_vouchers:
+        print(f"Updating DynamoDB for PNR: {voucher['PNR']} with VoucherCode: {voucher['VoucherCode']}")  # Debugging step
         try:
             table.update_item(
                 Key={
