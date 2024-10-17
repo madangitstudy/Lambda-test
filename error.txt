@@ -1,15 +1,130 @@
-Test Event Name
-test1
+import json
+import urllib.request
+import base64
+import os
+import boto3
+from datetime import datetime, timedelta
+from botocore.exceptions import ClientError
 
-Response
-{
-  "statusCode": 200,
-  "body": "{\"message\": \"Vouchers processed and updated.\"}"
-}
+def lambda_handler(event, context):
+    # Initialize DynamoDB client
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('VoucherDetails')  # Your DynamoDB table name
 
-Function Logs
-START RequestId: 3a77fd2e-94e2-4392-98cd-bbfeb125551c Version: $LATEST
-Sending payload: {"voucherType": {"href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=", "key": "a\u0192Jj2ImKybdP8tQcem2rUqODpzveNdvDKwoL3l\u00a5DYg8=", "name": "Late Arrival"}, "generationNumber": 2, "password": null, "personalIdentificationNumber": null, "autoGeneratePersonalIdentificationNumber": {"length": 4}, "autoGeneratePassword": {"length": 6}, "expiryDate": "2024-12-16 14:53:37", "available": 20, "reason": "Sample reason for generating this voucher", "bookingWindow": "none", "voucherValue": 60, "eligiblePassengers": [{"firstName": "", "lastName": "", "pnr": "ABC123"}]}
-Unexpected error: 'key'
-END RequestId: 3a77fd2e-94e2-4392-98cd-bbfeb125551c
-REPORT RequestId: 3a77fd2e-94e2-4392-98cd-bbfeb125551c	Duration: 3906.69 ms	Billed Duration: 3907 ms	Memory Size: 128 MB	Max Memory Used: 80 MB	Init Duration: 295.57 ms
+    # Query DynamoDB to find vouchers that need to be generated
+    vouchers_to_generate = []
+    
+    try:
+        response = table.scan()  # Consider using query for more specific results
+        items = response.get('Items', [])
+        
+        for item in items:
+            # Check if voucher code or ID is not set
+            if not item.get('VoucherID'):
+                vouchers_to_generate.append(item)
+
+    except ClientError as e:
+        print(f"Error retrieving data: {e.response['Error']['Message']}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps({"error": "Could not retrieve data from DynamoDB."})
+        }
+    
+    # Define the URL for the API
+    url = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields={fields}"
+
+    # Define the expiry date (60 days from now) and format it as 'YYYY-MM-DD HH:mm:ss'
+    expiry_date = (datetime.utcnow() + timedelta(days=60)).strftime('%Y-%m-%d %H:%M:%S')
+
+    # Process each voucher that needs to be generated
+    generated_vouchers = []
+    for voucher in vouchers_to_generate:
+        payload = {
+            "voucherType": {
+                "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
+                "key": os.environ['VOUCHER_KEY'],
+                "name": "Late Arrival"
+            },
+            "generationNumber": 2,
+            "password": None,
+            "personalIdentificationNumber": None,
+            "autoGeneratePersonalIdentificationNumber": {
+                "length": 4
+            },
+            "autoGeneratePassword": {
+                "length": 6
+            },
+            "expiryDate": expiry_date,
+            "available": 20,
+            "reason": "Sample reason for generating this voucher",
+            "bookingWindow": "none",
+            "voucherValue": 60,
+            "eligiblePassengers": [
+                {
+                    "firstName": voucher['PassengerFirstName'],
+                    "lastName": voucher['PassengerLastName'],
+                    "pnr": voucher['PNR']
+                }
+            ]
+        }
+        
+        # Create a request object
+        req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), method='POST')
+        req.add_header('Content-Type', 'application/json')
+
+        # Add Basic Authentication
+        username = os.environ['USERNAME']
+        password = os.environ['PASSWORD']
+        credentials = f"{username}:{password}"
+        b64_credentials = base64.b64encode(credentials.encode()).decode()
+        req.add_header('Authorization', f'Basic {b64_credentials}')
+
+        try:
+            # Make the API request with a timeout of 10 seconds
+            with urllib.request.urlopen(req, timeout=10) as response:
+                response_body = response.read()
+                response_data = json.loads(response_body)
+                
+                # Log the entire response data for debugging
+                print(f"API response data: {json.dumps(response_data)}")
+                
+                # Assuming the first item contains the necessary data
+                if response_data and isinstance(response_data, list) and len(response_data) > 0:
+                    generated_vouchers.append({
+                        'PNR': voucher['PNR'],  # Include PNR to use as key for update
+                        'VoucherID': response_data[0].get('key'),  # Use get to avoid KeyError
+                        'VoucherCode': response_data[0].get('serialNumber'),  # Use get to avoid KeyError
+                        'VoucherExpiryDate': expiry_date
+                    })
+                else:
+                    print("No valid voucher data returned from the API.")
+
+        except urllib.error.HTTPError as e:
+            error_message = e.read().decode('utf-8')
+            print(f"Error generating voucher: {error_message}")
+        except urllib.error.URLError as e:
+            print(f"URL error: {e.reason}")
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+
+    # Update DynamoDB with generated vouchers
+    for voucher in generated_vouchers:
+        try:
+            table.update_item(
+                Key={
+                    'PNR': voucher['PNR']  # Adjust the key according to your primary key
+                },
+                UpdateExpression="SET VoucherID = :vid, VoucherCode = :vcode, VoucherExpiryDate = :vexp",
+                ExpressionAttributeValues={
+                    ':vid': voucher['VoucherID'],
+                    ':vcode': voucher['VoucherCode'],
+                    ':vexp': voucher['VoucherExpiryDate']
+                }
+            )
+        except ClientError as e:
+            print(f"Error updating voucher in DynamoDB: {e.response['Error']['Message']}")
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps({"message": "Vouchers processed and updated."})
+    }
