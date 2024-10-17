@@ -1,119 +1,26 @@
-import json
-import urllib.request
-import base64
-import os
-import boto3
-from datetime import datetime, timedelta
-from botocore.exceptions import ClientError
+Test Event Name
+Voucher-test
 
-def lambda_handler(event, context):
-    # Initialize DynamoDB client
-    dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('VoucherDetails')  # Your DynamoDB table name
+Response
+{
+  "errorMessage": "Remote end closed connection without response",
+  "errorType": "RemoteDisconnected",
+  "requestId": "7eea07be-994a-4419-8992-c4bca7aa8b6f",
+  "stackTrace": [
+    "  File \"/var/task/lambda_function.py\", line 84, in lambda_handler\n    with urllib.request.urlopen(req) as response:\n",
+    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 215, in urlopen\n    return opener.open(url, data, timeout)\n",
+    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 515, in open\n    response = self._open(req, data)\n",
+    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 532, in _open\n    result = self._call_chain(self.handle_open, protocol, protocol +\n",
+    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 492, in _call_chain\n    result = func(*args)\n",
+    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 1392, in https_open\n    return self.do_open(http.client.HTTPSConnection, req,\n",
+    "  File \"/var/lang/lib/python3.12/urllib/request.py\", line 1348, in do_open\n    r = h.getresponse()\n",
+    "  File \"/var/lang/lib/python3.12/http/client.py\", line 1428, in getresponse\n    response.begin()\n",
+    "  File \"/var/lang/lib/python3.12/http/client.py\", line 331, in begin\n    version, status, reason = self._read_status()\n",
+    "  File \"/var/lang/lib/python3.12/http/client.py\", line 300, in _read_status\n    raise RemoteDisconnected(\"Remote end closed connection without\"\n"
+  ]
+}
 
-    # Query DynamoDB to find vouchers that need to be generated
-    vouchers_to_generate = []
-    
-    try:
-        response = table.scan()  # Consider using query for more specific results
-        items = response.get('Items', [])
-        
-        for item in items:
-            # Check if VoucherCode is not set (empty or None)
-            if not item.get('VoucherCode'):
-                vouchers_to_generate.append(item)
-
-    except ClientError as e:
-        print(f"Error retrieving data: {e.response['Error']['Message']}")
-        return {
-            'statusCode': 500,
-            'body': json.dumps({"error": "Could not retrieve data from DynamoDB."})
-        }
-    
-    # Define the URL for the API
-    url = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields={fields}"
-
-    # Define the expiry date (60 days from now) and format it as 'YYYY-MM-DD HH:mm:ss'
-    expiry_date = (datetime.utcnow() + timedelta(days=60)).strftime('%Y-%m-%d %H:%M:%S')
-
-    # Process each voucher that needs to be generated
-    generated_vouchers = []
-    for voucher in vouchers_to_generate:
-        payload = {
-            "voucherType": {
-                "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
-                "key": os.environ['VOUCHER_KEY'],
-                "name": "Late Arrival"
-            },
-            "generationNumber": 2,
-            "password": None,
-            "personalIdentificationNumber": None,
-            "autoGeneratePersonalIdentificationNumber": {
-                "length": 4
-            },
-            "autoGeneratePassword": {
-                "length": 6
-            },
-            "expiryDate": expiry_date,
-            "available": 20,
-            "reason": "Sample reason for generating this voucher",
-            "bookingWindow": "none",
-            "voucherValue": 60,
-            "eligiblePassengers": [
-                {
-                    "firstName": voucher['PassengerFirstName'],
-                    "lastName": voucher['PassengerLastName'],
-                    "pnr": voucher['PNR']
-                }
-            ]
-        }
-        
-        # Create a request object
-        req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), method='POST')
-        req.add_header('Content-Type', 'application/json')
-
-        # Add Basic Authentication
-        username = os.environ['USERNAME']
-        password = os.environ['PASSWORD']
-        credentials = f"{username}:{password}"
-        b64_credentials = base64.b64encode(credentials.encode()).decode()
-        req.add_header('Authorization', f'Basic {b64_credentials}')
-
-        try:
-            # Make the API request
-            with urllib.request.urlopen(req) as response:
-                response_body = response.read()
-                response_data = json.loads(response_body)
-                generated_vouchers.append({
-                    'PNR': voucher['PNR'],  # Include PNR to use as key for update
-                    'VoucherID': response_data[0]['key'],  # Example of how to extract the VoucherID
-                    'VoucherCode': response_data[0]['serialNumber'],  # Example of how to extract the VoucherCode
-                    'VoucherExpiryDate': expiry_date
-                })
-
-        except urllib.error.HTTPError as e:
-            error_message = e.read().decode('utf-8')
-            print(f"Error generating voucher: {error_message}")
-
-    # Update DynamoDB with generated vouchers
-    for voucher in generated_vouchers:
-        print(f"Updating DynamoDB for PNR: {voucher['PNR']} with VoucherCode: {voucher['VoucherCode']}")  # Debugging step
-        try:
-            table.update_item(
-                Key={
-                    'PNR': voucher['PNR']  # Adjust the key according to your primary key
-                },
-                UpdateExpression="SET VoucherID = :vid, VoucherCode = :vcode, VoucherExpiryDate = :vexp",
-                ExpressionAttributeValues={
-                    ':vid': voucher['VoucherID'],
-                    ':vcode': voucher['VoucherCode'],
-                    ':vexp': voucher['VoucherExpiryDate']
-                }
-            )
-        except ClientError as e:
-            print(f"Error updating voucher in DynamoDB: {e.response['Error']['Message']}")
-
-    return {
-        'statusCode': 200,
-        'body': json.dumps({"message": "Vouchers processed and updated."})
-    }
+Function Logs
+START RequestId: 7eea07be-994a-4419-8992-c4bca7aa8b6f Version: $LATEST
+LAMBDA_WARNING: Unhandled exception. The most likely cause is an issue in the function code. However, in rare cases, a Lambda runtime update can cause unexpected function behavior. For functions using managed runtimes, runtime updates can be triggered by a function change, or can be applied automatically. To determine if the runtime has been updated, check the runtime version in the INIT_START log entry. If this error correlates with a change in the runtime version, you may be able to mitigate this error by temporarily rolling back to the previous runtime version. For more information, see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-update.html
+[ERROR] RemoteDisconnected: Remote end closed connection without response
