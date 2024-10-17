@@ -1,22 +1,65 @@
-Test Event Name
-test1
+import json
+import urllib.request
+import base64
+import os
+import boto3
+from datetime import datetime, timedelta
+from botocore.exceptions import ClientError
 
-Response
-{
-  "statusCode": 200,
-  "body": "{\"message\": \"Vouchers processed and updated.\"}"
-}
+def lambda_handler(event, context):
+    # Initialize DynamoDB client
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('VoucherDetails')  # Your DynamoDB table name
 
-Function Logs
-: "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapZiUxfvDBjeUXkAcWYmrJnY="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapTa%C2%A5N7UOXSlE04swfoOu9zg="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapW%C6%92rY9H5N9tMNmfPlp13WeY="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapU%C2%A59RvP%C2%A5gf%C2%A5afeU6u4nIp7Y="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapcO3La%C2%A5NIAK5DN87qvUMrz4="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapc6KUcfQ18wXIZhUc4qyCb4="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapXMhVMpWLM1pLkZ%C2%A5IcMydwE="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapf8K%C2%A5iiVHr2YdF2SntALKOc="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapXcW9FPPK%C6%92HvPXRf10EvqOw="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapRibcA%C6%92ShOkKem9VUnmvuLM="}]
-API response data: [{"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapQg7cBn0x7l1nHrgw0VE8ek="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapSk2VagB%C2%A5BK%C2%A5WxveDYyU4r0="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapUW4%C6%92vjVYNmTJ42NQqZt%C6%92MM="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapYl%C2%A5waNiqhC8ecwaqcvssmA="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapZiUxfvDBjeUXkAcWYmrJnY="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapTa%C2%A5N7UOXSlE04swfoOu9zg="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapW%C6%92rY9H5N9tMNmfPlp13WeY="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapU%C2%A59RvP%C2%A5gf%C2%A5afeU6u4nIp7Y="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapcO3La%C2%A5NIAK5DN87qvUMrz4="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapc6KUcfQ18wXIZhUc4qyCb4="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapXMhVMpWLM1pLkZ%C2%A5IcMydwE="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapf8K%C2%A5iiVHr2YdF2SntALKOc="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapXcW9FPPK%C6%92HvPXRf10EvqOw="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapRibcA%C6%92ShOkKem9VUnmvuLM="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapTfsj8KMOWMqKIgdiZkRTTc="}, {"href": "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/4Ny63MjEXGYY85HIOcHapZQjvkBWhn4aW56kXhaocrs="}]
-Error updating voucher in DynamoDB: The provided key element does not match the schema
-Error updating voucher in DynamoDB: The provided key element does not match the schema
-Error updating voucher in DynamoDB: The provided key element does not match the schema
-Error updating voucher in DynamoDB: The provided key element does not match the schema
-Error updating voucher in DynamoDB: The provided key element does not match the schema
-Error updating voucher in DynamoDB: The provided key element does not match the schema
-Error updating voucher in DynamoDB: The provided key element does not match the schema
-Error updating voucher in DynamoDB: The provided key element does not match the schema
-END RequestId: 4f7f1402-7487-4031-b91d-ba6c971b444b
-REPORT RequestId: 4f7f1402-7487-4031-b91d-ba6c971b444b	Duration: 4451.46 ms	Billed Duration: 4452 ms	Memory Size: 128 MB	Max Memory Used: 80 MB	Init Duration: 299.11 ms
+    # Query DynamoDB to find vouchers that need to be generated
+    vouchers_to_generate = []
+    
+    try:
+        response = table.scan()  # Consider using query for more specific results
+        items = response.get('Items', [])
+        
+        for item in items:
+            # Check if voucher code or ID is not set
+            if not item.get('VoucherID'):
+                vouchers_to_generate.append(item)
+
+    except ClientError as e:
+        print(f"Error retrieving data from DynamoDB: {e}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'error': 'Failed to retrieve data from DynamoDB'})
+        }
+
+    # Process vouchers that need to be generated
+    for voucher in vouchers_to_generate:
+        pnr = voucher.get('PNR')
+        voucher_id = voucher.get('ID')  # Using the ID field here
+
+        if not pnr:
+            print(f"Skipping entry without a valid PNR: {voucher}")
+            continue
+
+        # Generate the voucher (mock API request for example purposes)
+        try:
+            voucher_code = generate_voucher_for_pnr(pnr)
+            
+            # Update DynamoDB with the generated voucher code
+            update_response = table.update_item(
+                Key={'PNR': pnr, 'ID': voucher_id},  # Ensure you're using the correct keys
+                UpdateExpression="SET VoucherCode = :v_code",
+                ExpressionAttributeValues={':v_code': voucher_code}
+            )
+            print(f"Voucher updated for PNR {pnr} with VoucherCode {voucher_code}")
+
+        except Exception as e:
+            print(f"Error generating or updating voucher for PNR {pnr}: {e}")
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps({'message': 'Vouchers processed and updated.'})
+    }
+
+def generate_voucher_for_pnr(pnr):
+    # Simulated voucher generation function
+    # In your case, this would be replaced with an API call to generate the voucher
+    return f"VCHR-{base64.urlsafe_b64encode(pnr.encode()).decode()[:8]}"
