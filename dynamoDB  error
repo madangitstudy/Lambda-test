@@ -1,3 +1,5 @@
+Lambda Function
+
 import json
 import urllib.request
 import base64
@@ -115,3 +117,52 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'body': json.dumps({"message": "Vouchers processed and updated."})
     }
+
+I have created Dynamo DB Table as below
+Attribute Name  Value
+PNR     ABC123
+Voucher ID None
+ArrivalCity empty
+ArrivalAirportCode empty
+DepartureCity empty
+DepartureAirportCode empty
+PassengerFirstName empty
+PassengerLastName empty
+FlightNumber empty
+FlightStatus empty
+VoucherValue 0
+VoucherCode empty
+VoucherExpiryDate empty
+Email empty
+
+Json test Payload
+{
+  "eligiblePassengers": [
+    {
+      "firstName": "Alice",
+      "lastName": "Smit",
+      "pnr": "PNR123"
+    },
+    {
+      "firstName": "Bob",
+      "lastName": "Johnson",
+      "pnr": "PNR456"
+    }
+  ]
+}
+
+Test Event Name
+Voucher-test
+
+Response
+{
+  "statusCode": 200,
+  "body": "{\"message\": \"Vouchers processed and updated.\"}"
+}
+
+Function Logs
+START RequestId: 7a0eff17-3b48-4846-953c-8203b04bffc2 Version: $LATEST
+END RequestId: 7a0eff17-3b48-4846-953c-8203b04bffc2
+REPORT RequestId: 7a0eff17-3b48-4846-953c-8203b04bffc2	Duration: 2779.83 ms	Billed Duration: 2780 ms	Memory Size: 128 MB	Max Memory Used: 78 MB	Init Duration: 290.06 ms
+
+But I am not able to see any data updated in DynamoDB
