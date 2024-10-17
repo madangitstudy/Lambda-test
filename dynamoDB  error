@@ -1,5 +1,3 @@
-Lambda Function
-
 import json
 import urllib.request
 import base64
@@ -20,6 +18,9 @@ def lambda_handler(event, context):
         response = table.scan()  # Consider using query for more specific results
         items = response.get('Items', [])
         
+        # Log the items retrieved from DynamoDB
+        print(f"Items retrieved from DynamoDB: {items}")
+
         for item in items:
             # Check if voucher code or ID is not set
             if not item.get('VoucherID'):
@@ -86,7 +87,13 @@ def lambda_handler(event, context):
             with urllib.request.urlopen(req) as response:
                 response_body = response.read()
                 response_data = json.loads(response_body)
+                
+                # Log the response from the voucher API
+                print(f"API Response: {response_data}")
+
+                # Add the generated voucher details to the list
                 generated_vouchers.append({
+                    'PNR': voucher['PNR'],  # Ensure the PNR is passed for update
                     'VoucherID': response_data[0]['key'],  # Example of how to extract the VoucherID
                     'VoucherCode': response_data[0]['serialNumber'],  # Example of how to extract the VoucherCode
                     'VoucherExpiryDate': expiry_date
@@ -96,12 +103,15 @@ def lambda_handler(event, context):
             error_message = e.read().decode('utf-8')
             print(f"Error generating voucher: {error_message}")
 
+    # Log the generated vouchers
+    print(f"Generated vouchers: {generated_vouchers}")
+
     # Update DynamoDB with generated vouchers
     for voucher in generated_vouchers:
         try:
             table.update_item(
                 Key={
-                    'PNR': voucher['PNR']  # Adjust the key according to your primary key
+                    'PNR': voucher['PNR']  # Use the correct PNR as the key
                 },
                 UpdateExpression="SET VoucherID = :vid, VoucherCode = :vcode, VoucherExpiryDate = :vexp",
                 ExpressionAttributeValues={
@@ -110,59 +120,12 @@ def lambda_handler(event, context):
                     ':vexp': voucher['VoucherExpiryDate']
                 }
             )
+            print(f"Successfully updated PNR {voucher['PNR']} with VoucherID {voucher['VoucherID']}")
+
         except ClientError as e:
-            print(f"Error updating voucher in DynamoDB: {e.response['Error']['Message']}")
+            print(f"Error updating voucher in DynamoDB for PNR {voucher['PNR']}: {e.response['Error']['Message']}")
 
     return {
         'statusCode': 200,
         'body': json.dumps({"message": "Vouchers processed and updated."})
     }
-
-I have created Dynamo DB Table as below
-Attribute Name  Value
-PNR     ABC123
-Voucher ID None
-ArrivalCity empty
-ArrivalAirportCode empty
-DepartureCity empty
-DepartureAirportCode empty
-PassengerFirstName empty
-PassengerLastName empty
-FlightNumber empty
-FlightStatus empty
-VoucherValue 0
-VoucherCode empty
-VoucherExpiryDate empty
-Email empty
-
-Json test Payload
-{
-  "eligiblePassengers": [
-    {
-      "firstName": "Alice",
-      "lastName": "Smit",
-      "pnr": "PNR123"
-    },
-    {
-      "firstName": "Bob",
-      "lastName": "Johnson",
-      "pnr": "PNR456"
-    }
-  ]
-}
-
-Test Event Name
-Voucher-test
-
-Response
-{
-  "statusCode": 200,
-  "body": "{\"message\": \"Vouchers processed and updated.\"}"
-}
-
-Function Logs
-START RequestId: 7a0eff17-3b48-4846-953c-8203b04bffc2 Version: $LATEST
-END RequestId: 7a0eff17-3b48-4846-953c-8203b04bffc2
-REPORT RequestId: 7a0eff17-3b48-4846-953c-8203b04bffc2	Duration: 2779.83 ms	Billed Duration: 2780 ms	Memory Size: 128 MB	Max Memory Used: 78 MB	Init Duration: 290.06 ms
-
-But I am not able to see any data updated in DynamoDB
