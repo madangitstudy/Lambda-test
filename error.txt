@@ -1,36 +1,115 @@
-Test Event Name
-test
+import json
+import boto3
 
-Response
-{
-  "errorMessage": "An error occurred (ValidationException) when calling the GetItem operation: The provided key element does not match the schema",
-  "errorType": "ClientError",
-  "requestId": "a450ce6d-1e84-4e3f-a514-8526fb730304",
-  "stackTrace": [
-    "  File \"/var/task/lambda_function.py\", line 19, in lambda_handler\n    response = table.get_item(Key={'PNR': id_value})  # Assuming 'PNR' is your primary key\n",
-    "  File \"/var/lang/lib/python3.12/site-packages/boto3/resources/factory.py\", line 581, in do_action\n    response = action(self, *args, **kwargs)\n",
-    "  File \"/var/lang/lib/python3.12/site-packages/boto3/resources/action.py\", line 88, in __call__\n    response = getattr(parent.meta.client, operation_name)(*args, **params)\n",
-    "  File \"/var/lang/lib/python3.12/site-packages/botocore/client.py\", line 565, in _api_call\n    return self._make_api_call(operation_name, kwargs)\n",
-    "  File \"/var/lang/lib/python3.12/site-packages/botocore/client.py\", line 1021, in _make_api_call\n    raise error_class(parsed_response, operation_name)\n"
-  ]
-}
+def lambda_handler(event, context):
+    # Initialize DynamoDB client
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('VoucherDetails')  # Your DynamoDB table name
 
-Function Logs
-START RequestId: a450ce6d-1e84-4e3f-a514-8526fb730304 Version: $LATEST
-LAMBDA_WARNING: Unhandled exception. The most likely cause is an issue in the function code. However, in rare cases, a Lambda runtime update can cause unexpected function behavior. For functions using managed runtimes, runtime updates can be triggered by a function change, or can be applied automatically. To determine if the runtime has been updated, check the runtime version in the INIT_START log entry. If this error correlates with a change in the runtime version, you may be able to mitigate this error by temporarily rolling back to the previous runtime version. For more information, see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-update.html
-[ERROR] ClientError: An error occurred (ValidationException) when calling the GetItem operation: The provided key element does not match the schema
-Traceback (most recent call last):
-  File "/var/task/lambda_function.py", line 19, in lambda_handler
-    response = table.get_item(Key={'PNR': id_value})  # Assuming 'PNR' is your primary key
-  File "/var/lang/lib/python3.12/site-packages/boto3/resources/factory.py", line 581, in do_action
-    response = action(self, *args, **kwargs)
-  File "/var/lang/lib/python3.12/site-packages/boto3/resources/action.py", line 88, in __call__
-    response = getattr(parent.meta.client, operation_name)(*args, **params)
-  File "/var/lang/lib/python3.12/site-packages/botocore/client.py", line 565, in _api_call
-    return self._make_api_call(operation_name, kwargs)
-  File "/var/lang/lib/python3.12/site-packages/botocore/client.py", line 1021, in _make_api_call
-    raise error_class(parsed_response, operation_name)END RequestId: a450ce6d-1e84-4e3f-a514-8526fb730304
-REPORT RequestId: a450ce6d-1e84-4e3f-a514-8526fb730304	Duration: 2862.21 ms	Billed Duration: 2863 ms	Memory Size: 128 MB	Max Memory Used: 78 MB	Init Duration: 292.83 ms
+    # Extract ID from event
+    id_value = event.get("id")
+    
+    if not id_value:
+        return {
+            "statusCode": 400,
+            "body": "ID value is missing from the event input."
+        }
+    
+    # Debug statement to show the id_value
+    print(f"ID value received: {id_value}")
 
-Request ID
-a450ce6d-1e84-4e3f-a514-8526fb730304
+    # Fetch the voucher details from DynamoDB using the ID
+    try:
+        response = table.get_item(Key={'PNR': id_value})  # Replace 'PNR' with your actual primary key name
+        voucher_details = response.get('Item')
+
+        if not voucher_details:
+            return {
+                "statusCode": 404,
+                "body": "Voucher details not found."
+            }
+    except Exception as e:
+        print(f"Error fetching from DynamoDB: {str(e)}")  # Print the error for debugging
+        return {
+            "statusCode": 500,
+            "body": "Error fetching from DynamoDB."
+        }
+
+    # Extract relevant details from DynamoDB
+    email = voucher_details.get('Email')  # Get email from DynamoDB
+    voucher_code = voucher_details.get('VoucherCode')  # Get voucher code from DynamoDB
+    voucher_expiry_date = voucher_details.get('VoucherExpiryDate')  # Get expiry date from DynamoDB
+    voucher_value = voucher_details.get('VoucherValue')  # Get voucher value from DynamoDB
+
+    # Convert voucher_value to float if it is a string
+    if isinstance(voucher_value, str):
+        voucher_value = float(voucher_value)
+
+    # Check if child passenger details exist in DynamoDB
+    child_first_name = voucher_details.get('ChildPassengerFirstName', None)
+    child_last_name = voucher_details.get('ChildPassengerLastName', None)
+
+    # Prepare the data payload for Klaviyo
+    payload = {
+        "data": {
+            "type": "event",
+            "attributes": {
+                "profile": {
+                    "data": {
+                        "type": "profile",
+                        "attributes": {
+                            "email": email  # Updated email field from DynamoDB
+                        }
+                    }
+                },
+                "metric": {
+                    "data": {
+                        "type": "metric",
+                        "attributes": {
+                            "name": "OTPG voucher_email"  # Event name
+                        }
+                    }
+                },
+                "properties": {
+                    "flight_details": {
+                        "actual_arrival_time": "2023-07-26T13:00:00",  # Keep as is
+                        "expected_arrival_time": "2023-07-26T12:00:00",  # Keep as is
+                        "pnr_booking_id": id_value,  # Updated to use ID/PNR from DynamoDB
+                        "time_length_of_delay": 60  # Keep as is
+                    },
+                    "passengers": [
+                        {
+                            "first_name": voucher_details.get('AdultPassengerFirstName'),  # Updated from DynamoDB for adult
+                            "last_name": voucher_details.get('AdultPassengerLastName'),    # Updated from DynamoDB for adult
+                            "passenger_type": "adult",  # Keep as is
+                            "voucher": {
+                                "expiry_date": voucher_expiry_date,  # Updated expiry date from DynamoDB
+                                "unique_voucher_code": voucher_code,  # Updated voucher code from DynamoDB
+                                "voucher_value": voucher_value  # Updated voucher value from DynamoDB
+                            }
+                        },
+                        {
+                            "first_name": child_first_name if child_first_name else "Unknown",  # Get child name or default
+                            "last_name": child_last_name if child_last_name else "Unknown",    # Get child last name or default
+                            "passenger_type": "child",  # Keep as is
+                            "voucher": {
+                                "expiry_date": voucher_expiry_date,  # Set same expiry date as adult passenger
+                                "unique_voucher_code": f"CHILD-{voucher_code}",  # Modify voucher code for child
+                                "voucher_value": voucher_value / 2,  # Set child voucher value to half of adult
+                                "message": "Passenger must be over 18 years old"  # Keep message as is
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
+    # Optionally, send the payload to Klaviyo or any other service
+    # response = requests.post('YOUR_KLAVIYO_ENDPOINT', json=payload)
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps("Event processed successfully."),
+        "payload": payload  # Return the payload for debugging purposes
+    }
