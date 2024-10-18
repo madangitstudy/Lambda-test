@@ -1,117 +1,17 @@
-import json
-import boto3
-from botocore.exceptions import ClientError
+Test Event Name
+test
 
-# Initialize DynamoDB and Lambda clients
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('VoucherDetails')
-lambda_client = boto3.client('lambda')
+Response
+{
+  "statusCode": 500,
+  "body": "\"Error fetching voucher details: An error occurred (ValidationException) when calling the GetItem operation: The provided key element does not match the schema\""
+}
 
-def lambda_handler(event, context):
-    # Extract PNR from the event (you can change this logic based on how the event is structured)
-    pnr = event.get('PNR', 'TVUVPJ')
+Function Logs
+START RequestId: 85c81b3b-a820-406d-83af-c1a23347d4ae Version: $LATEST
+DynamoDB query failed: An error occurred (ValidationException) when calling the GetItem operation: The provided key element does not match the schema
+END RequestId: 85c81b3b-a820-406d-83af-c1a23347d4ae
+REPORT RequestId: 85c81b3b-a820-406d-83af-c1a23347d4ae	Duration: 419.43 ms	Billed Duration: 420 ms	Memory Size: 128 MB	Max Memory Used: 80 MB	Init Duration: 490.21 ms
 
-    # Query DynamoDB to retrieve voucher details based on PNR
-    try:
-        response = table.get_item(Key={'PNR': pnr})
-        item = response.get('Item', None)
-
-        if not item:
-            return {
-                'statusCode': 404,
-                'body': json.dumps(f'No voucher details found for PNR: {pnr}')
-            }
-
-        print(f"DynamoDB response: {item}")
-        
-        # If email is not found in DynamoDB, use a dummy email for testing purposes
-        email = item.get('Email', 'dummy@example.com')
-        if email is None:
-            print("Email not found in DynamoDB. Using dummy email for testing.")
-            email = "dummy@example.com"
-
-        # Prepare the payload for Klaviyo
-        payload = {
-            "data": {
-                "type": "event",
-                "attributes": {
-                    "profile": {
-                        "data": {
-                            "type": "profile",
-                            "attributes": {
-                                "email": email
-                            }
-                        }
-                    },
-                    "metric": {
-                        "data": {
-                            "type": "metric",
-                            "attributes": {
-                                "name": "OTPG voucher_email"
-                            }
-                        }
-                    },
-                    "properties": {
-                        "flight_details": {
-                            "actual_arrival_time": None,
-                            "expected_arrival_time": None,
-                            "pnr_booking_id": item['ID'],
-                            "time_length_of_delay": None
-                        },
-                        "passengers": [
-                            {
-                                "first_name": item['PassengerFirstName'],
-                                "last_name": item['PassengerLastName'],
-                                "passenger_type": "adult",
-                                "voucher": {
-                                    "expiry_date": item['VoucherExpiryDate'],
-                                    "unique_voucher_code": item['VoucherCode'],
-                                    "voucher_value": item['VoucherValue']
-                                }
-                            },
-                            {
-                                "first_name": "Unknown",
-                                "last_name": "Unknown",
-                                "passenger_type": "child",
-                                "voucher": {
-                                    "expiry_date": None,
-                                    "unique_voucher_code": None,
-                                    "voucher_value": None,
-                                    "message": "Passenger must be over 18 years old"
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-
-        print(f"Payload: {json.dumps(payload)}")
-
-        # Invoke the KlaviyoNotifier Lambda function
-        try:
-            response = lambda_client.invoke(
-                FunctionName='KlaviyoNotifier',
-                InvocationType='RequestResponse',
-                Payload=json.dumps(payload)
-            )
-            print(f"Lambda invoke response: {response}")
-            
-            return {
-                'statusCode': 200,
-                'body': json.dumps(f'Notification sent successfully for PNR: {pnr}')
-            }
-
-        except ClientError as e:
-            print(f"Failed to send notification: {str(e)}")
-            return {
-                'statusCode': 500,
-                'body': json.dumps(f'Failed to send notification: {str(e)}')
-            }
-
-    except ClientError as e:
-        print(f"DynamoDB query failed: {str(e)}")
-        return {
-            'statusCode': 500,
-            'body': json.dumps(f'Error fetching voucher details: {str(e)}')
-        }
+Request ID
+85c81b3b-a820-406d-83af-c1a23347d4ae
