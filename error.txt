@@ -1,70 +1,46 @@
-VoucherDetails
-ID- 
-- Partition key
-String
-
-PNR
-ABC123
-String
-VoucherID
-- Sort key
-V1234
-String
-ArrivalAirportCode
-Empty value
-String
-Remove
-ArrivalCity
-Empty value
-String
-Remove
-DepartureAirportCode
-Empty value
-String
-Remove
-DepartureCity
-Empty value
-String
-Remove
-Email
-Empty value
-String
-Remove
-FlightNumber
-Empty value
-String
-Remove
-FlightStatus
-Empty value
-String
-Remove
-PassengerFirstName
-Empty value
-String
-Remove
-PassengerLastName
-Empty value
-String
-Remove
-VoucherCode
-Empty value
-String
-Remove
-VoucherExpiryDate
-Empty value
-String
-Remove
-VoucherValue
-0 . I have the DynamoDB and API code is below. Need to modified the code as per DynamoDB paratmeter. dyimport json
+import json
 import urllib.request
+import boto3
+
+# Initialize DynamoDB client
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('VoucherDetails')
 
 def lambda_handler(event, context):
+    # Extract PNR from the event (if needed)
+    pnr = event.get('pnr', 'ABC123')  # You can pass the PNR from the event
+
+    # Query DynamoDB to retrieve the email and voucher details using the PNR
+    try:
+        response = table.get_item(Key={'PNR': pnr})
+        voucher_details = response.get('Item')
+
+        if not voucher_details:
+            return {
+                "statusCode": 404,
+                "body": f"No data found for PNR: {pnr}"
+            }
+
+        # Extract relevant details from DynamoDB and provide default fallbacks if not found
+        email = voucher_details.get('Email', 'no-reply@example.com')  # Default email if not found
+        voucher_code = voucher_details.get('VoucherCode', 'DEFAULT-VOUCHER')  # Default voucher code
+        voucher_expiry_date = voucher_details.get('VoucherExpiryDate', '2024-12-31')  # Default expiry date
+        voucher_value = voucher_details.get('VoucherValue', 50)  # Default voucher value if not found
+        first_name = voucher_details.get('PassengerFirstName', 'John')  # Default first name
+        last_name = voucher_details.get('PassengerLastName', 'Doe')  # Default last name
+
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": f"Error fetching data from DynamoDB: {str(e)}"
+        }
+
     # Set API endpoint
     api_endpoint = "https://a.klaviyo.com/api/events/"
     endpoint_token = "Klaviyo-API-Key pk_c1031f8fd7cae03b92be86f68eb85bf2f4"  # Ensure this is the correct key
     revision_date = "2023-10-10"  # Set the required revision date
 
-    # Prepare the data payload
+    # Prepare the data payload for Klaviyo, keeping unchanged fields intact
     payload = {
         "data": {
             "type": "event",
@@ -73,7 +49,7 @@ def lambda_handler(event, context):
                     "data": {
                         "type": "profile",
                         "attributes": {
-                            "email": "xxxxxxxxxxxxxxxxx"  # Updated email field
+                            "email": email  # Updated email field from DynamoDB
                         }
                     }
                 },
@@ -87,37 +63,31 @@ def lambda_handler(event, context):
                 },
                 "properties": {
                     "flight_details": {
-                        "actual_arrival_time": "2023-07-26T13:00:00",
-                        "arrival_airport_code": "LAX",
-                        "arrival_city": "Los Angeles",
-                        "departure_airport_code": "JFK",
-                        "departure_city": "New York",
-                        "expected_arrival_time": "2023-07-26T12:00:00",
-                        "flight_number": "AA101",
-                        "flight_status": "Delayed",
-                        "pnr_booking_id": "ABC123",
-                        "time_length_of_delay": 60
+                        "actual_arrival_time": "2023-07-26T13:00:00",  # Keep as is
+                        "expected_arrival_time": "2023-07-26T12:00:00",  # Keep as is
+                        "pnr_booking_id": pnr,  # Updated to use PNR from DynamoDB
+                        "time_length_of_delay": 60  # Keep as is
                     },
                     "passengers": [
                         {
-                            "first_name": "John",
-                            "last_name": "Doe",
-                            "passenger_type": "adult",
+                            "first_name": first_name,  # Updated from DynamoDB
+                            "last_name": last_name,    # Updated from DynamoDB
+                            "passenger_type": "adult",  # Keep as is
                             "voucher": {
-                                "expiry_date": "2023-07-31",
-                                "unique_voucher_code": "Voucher123",
-                                "voucher_value": 50
+                                "expiry_date": voucher_expiry_date,  # Updated expiry date from DynamoDB
+                                "unique_voucher_code": voucher_code,  # Updated voucher code from DynamoDB
+                                "voucher_value": voucher_value  # Updated voucher value from DynamoDB
                             }
                         },
                         {
-                            "first_name": "Jane",
-                            "last_name": "Doe",
-                            "passenger_type": "child",
+                            "first_name": "Jane",  # Keep as is for second passenger
+                            "last_name": "Doe",  # Keep as is for second passenger
+                            "passenger_type": "child",  # Keep as is
                             "voucher": {
-                                "expiry_date": None,
-                                "unique_voucher_code": None,
-                                "voucher_value": None,
-                                "message": "Passenger must be over 18 years old"  # Added message
+                                "expiry_date": voucher_expiry_date,  # Set same expiry date as adult passenger
+                                "unique_voucher_code": f"CHILD-{voucher_code}",  # Modify voucher code for child
+                                "voucher_value": voucher_value / 2,  # Set child voucher value to half of adult
+                                "message": "Passenger must be over 18 years old"  # Keep message as is
                             }
                         }
                     ]
@@ -154,5 +124,3 @@ def lambda_handler(event, context):
             "statusCode": 500,
             "body": f"Internal server error: {str(e)}"
         }
-
-Compaire Modified above code with Dynamo DB table details and dont change rest of the parameter. I want to get the code like email notification should send to customer eamil id using Klaviyo account
