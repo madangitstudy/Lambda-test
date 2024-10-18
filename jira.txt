@@ -1,22 +1,125 @@
-Test Event Name
-test
+import json
+import boto3
+import urllib.parse
+import urllib.request
+from datetime import datetime, timedelta
 
-Response
-{
-  "errorMessage": "Unable to import module 'lambda_function': No module named 'requests'",
-  "errorType": "Runtime.ImportModuleError",
-  "requestId": "",
-  "stackTrace": []
-}
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('VoucherDetails')
 
-Function Logs
-[ERROR] Runtime.ImportModuleError: Unable to import module 'lambda_function': No module named 'requests'
-Traceback (most recent call last):INIT_REPORT Init Duration: 334.33 ms	Phase: init	Status: error	Error Type: Runtime.ImportModuleError
-[ERROR] Runtime.ImportModuleError: Unable to import module 'lambda_function': No module named 'requests'
-Traceback (most recent call last):INIT_REPORT Init Duration: 3943.99 ms	Phase: invoke	Status: error	Error Type: Runtime.ImportModuleError
-START RequestId: f2d2e45f-e784-4f01-9c03-89b7adc91965 Version: $LATEST
-END RequestId: f2d2e45f-e784-4f01-9c03-89b7adc91965
-REPORT RequestId: f2d2e45f-e784-4f01-9c03-89b7adc91965	Duration: 3953.14 ms	Billed Duration: 3954 ms	Memory Size: 128 MB	Max Memory Used: 60 MB	Status: error	Error Type: Runtime.ImportModuleError
+def lambda_handler(event, context):
+    # Extract the ID from the event
+    id_value = event['id']
+    print(f"ID value received: {id_value}")
 
-Request ID
-f2d2e45f-e784-4f01-9c03-89b7adc91965
+    # Fetch the item from DynamoDB
+    response = table.get_item(Key={'ID': id_value})
+    item = response.get('Item')
+
+    if not item:
+        return {
+            "statusCode": 404,
+            "body": "Item not found."
+        }
+
+    print(f"DynamoDB response: {response}")
+
+    # Fetch the email; for testing, we'll use a dummy email if it's None
+    email = item.get('Email')
+    if not email:
+        email = "dummy@example.com"  # Dummy email for testing
+        print("Email not found in DynamoDB. Using dummy email for testing.")
+
+    # Prepare payload for Klaviyo
+    payload = {
+        "data": {
+            "type": "event",
+            "attributes": {
+                "profile": {
+                    "data": {
+                        "type": "profile",
+                        "attributes": {
+                            "email": email
+                        }
+                    }
+                },
+                "metric": {
+                    "data": {
+                        "type": "metric",
+                        "attributes": {
+                            "name": "OTPG voucher_email"
+                        }
+                    }
+                },
+                "properties": {
+                    "flight_details": {
+                        "actual_arrival_time": item.get('ActualArrivalTime'),
+                        "expected_arrival_time": item.get('ExpectedArrivalTime'),
+                        "pnr_booking_id": id_value,
+                        "time_length_of_delay": item.get('TimeLengthOfDelay')
+                    },
+                    "passengers": [
+                        {
+                            "first_name": item.get('PassengerFirstName'),
+                            "last_name": item.get('PassengerLastName'),
+                            "passenger_type": "adult",
+                            "voucher": {
+                                "expiry_date": item.get('VoucherExpiryDate'),
+                                "unique_voucher_code": item.get('VoucherCode'),
+                                "voucher_value": item.get('VoucherValue')
+                            }
+                        },
+                        {
+                            "first_name": "Unknown",  # Example value
+                            "last_name": "Unknown",    # Example value
+                            "passenger_type": "child",
+                            "voucher": {
+                                "expiry_date": None,
+                                "unique_voucher_code": None,
+                                "voucher_value": None,
+                                "message": "Passenger must be over 18 years old"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
+    # Prepare the request to Klaviyo
+    klaviyo_url = "https://a.klaviyo.com/api/events/"
+    klaviyo_api_key = "YOUR_KLAVIYO_API_KEY"
+    headers = {
+        "Authorization": f"Klaviyo-API-Key {klaviyo_api_key}",
+        "Content-Type": "application/json",
+        "Revision": "2023-01-01"  # Replace with the appropriate revision date
+    }
+
+    # Make the request using urllib
+    try:
+        req = urllib.request.Request(
+            klaviyo_url,
+            data=json.dumps(payload).encode('utf-8'),
+            headers=headers
+        )
+        with urllib.request.urlopen(req) as response:
+            response_body = response.read()
+            print(f"Klaviyo response: {response_body.decode('utf-8')}")
+
+    except urllib.error.HTTPError as e:
+        print(f"HTTP Error: {e.code} - {e.reason}")
+        return {
+            "statusCode": e.code,
+            "body": f"Failed to send notification: {e.reason}"
+        }
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return {
+            "statusCode": 500,
+            "body": "An error occurred while processing the request."
+        }
+
+    return {
+        "statusCode": 200,
+        "body": "Event processed successfully."
+    }
