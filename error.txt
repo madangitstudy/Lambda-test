@@ -2,57 +2,120 @@ import json
 import boto3
 
 def lambda_handler(event, context):
-    # Initialize the DynamoDB resource
+    # Initialize DynamoDB client
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('VoucherDetails')  # Replace with your table name
+    table = dynamodb.Table('VoucherDetails')  # Your DynamoDB table name
 
-    # Extract the ID from the event
-    id_value = event.get('id')
+    # Extract ID from event
+    id_value = event.get("id")
     
     if not id_value:
         return {
             "statusCode": 400,
-            "body": json.dumps("ID value is missing from the event input.")
+            "body": "ID value is missing from the event input."
         }
     
+    # Debug statement to show the id_value
     print(f"ID value received: {id_value}")
-    
+
+    # Fetch the voucher details from DynamoDB using the ID
     try:
-        # Fetch the item from DynamoDB using the primary key 'ID'
-        response = table.get_item(Key={'ID': id_value})
-        
-        if 'Item' not in response:
+        # Log the expected key structure
+        print(f"Fetching item with key: {{'ID': '{id_value}'}}")  # Adjust key to match your schema
+
+        response = table.get_item(Key={'ID': id_value})  # Use 'ID' as the primary key
+        voucher_details = response.get('Item')
+
+        # Log the response for debugging
+        print(f"DynamoDB response: {response}")
+
+        if not voucher_details:
             return {
                 "statusCode": 404,
-                "body": json.dumps("Item not found.")
+                "body": "Voucher details not found."
             }
-        
-        # Get the voucher details
-        voucher_details = response['Item']
-        
-        # Extract values for processing
-        passengers = event['data']['attributes']['properties']['passengers']
-        
-        for passenger in passengers:
-            if passenger['passenger_type'] == 'adult':
-                voucher_value = passenger['voucher']['voucher_value']
-                print(f"Adult voucher value: {voucher_value}")
-            elif passenger['passenger_type'] == 'child':
-                if voucher_value is not None:
-                    # Set child voucher value to half of adult
-                    child_voucher_value = voucher_value / 2
-                    passenger['voucher']['voucher_value'] = child_voucher_value
-        
-        # Here you can proceed with any additional processing or updates to DynamoDB
-        
-        return {
-            "statusCode": 200,
-            "body": json.dumps("Voucher processed successfully.")
-        }
-    
     except Exception as e:
-        print(f"Error fetching from DynamoDB: {e}")
+        print(f"Error fetching from DynamoDB: {str(e)}")  # Print the error for debugging
         return {
             "statusCode": 500,
-            "body": json.dumps("Error fetching from DynamoDB.")
+            "body": "Error fetching from DynamoDB."
         }
+
+    # Extract relevant details from DynamoDB
+    email = voucher_details.get('Email')  # Get email from DynamoDB
+    voucher_code = voucher_details.get('VoucherCode')  # Get voucher code from DynamoDB
+    voucher_expiry_date = voucher_details.get('VoucherExpiryDate')  # Get expiry date from DynamoDB
+    voucher_value = voucher_details.get('VoucherValue')  # Get voucher value from DynamoDB
+
+    # Convert voucher_value to float if it is a string
+    if isinstance(voucher_value, str):
+        voucher_value = float(voucher_value)
+
+    # Check if child passenger details exist in DynamoDB
+    child_first_name = voucher_details.get('ChildPassengerFirstName', None)
+    child_last_name = voucher_details.get('ChildPassengerLastName', None)
+
+    # Prepare the data payload for Klaviyo
+    payload = {
+        "data": {
+            "type": "event",
+            "attributes": {
+                "profile": {
+                    "data": {
+                        "type": "profile",
+                        "attributes": {
+                            "email": email  # Updated email field from DynamoDB
+                        }
+                    }
+                },
+                "metric": {
+                    "data": {
+                        "type": "metric",
+                        "attributes": {
+                            "name": "OTPG voucher_email"  # Event name
+                        }
+                    }
+                },
+                "properties": {
+                    "flight_details": {
+                        "actual_arrival_time": "2023-07-26T13:00:00",  # Keep as is
+                        "expected_arrival_time": "2023-07-26T12:00:00",  # Keep as is
+                        "pnr_booking_id": id_value,  # Updated to use ID from DynamoDB
+                        "time_length_of_delay": 60  # Keep as is
+                    },
+                    "passengers": [
+                        {
+                            "first_name": voucher_details.get('AdultPassengerFirstName'),  # Updated from DynamoDB for adult
+                            "last_name": voucher_details.get('AdultPassengerLastName'),    # Updated from DynamoDB for adult
+                            "passenger_type": "adult",  # Keep as is
+                            "voucher": {
+                                "expiry_date": voucher_expiry_date,  # Updated expiry date from DynamoDB
+                                "unique_voucher_code": voucher_code,  # Updated voucher code from DynamoDB
+                                "voucher_value": voucher_value  # Updated voucher value from DynamoDB
+                            }
+                        },
+                        {
+                            "first_name": child_first_name if child_first_name else "Unknown",  # Get child name or default
+                            "last_name": child_last_name if child_last_name else "Unknown",    # Get child last name or default
+                            "passenger_type": "child",  # Keep as is
+                            "voucher": {
+                                "expiry_date": voucher_expiry_date,  # Set same expiry date as adult passenger
+                                "unique_voucher_code": f"CHILD-{voucher_code}",  # Modify voucher code for child
+                                "voucher_value": voucher_value / 2,  # Set child voucher value to half of adult
+                                "message": "Passenger must be over 18 years old"  # Keep message as is
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
+    # Optionally, send the payload to Klaviyo or any other service
+    # response = requests.post('YOUR_KLAVIYO_ENDPOINT', json=payload)
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps("Event processed successfully."),
+        "payload": payload  # Return the payload for debugging purposes
+    }
