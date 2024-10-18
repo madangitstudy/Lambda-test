@@ -1,54 +1,28 @@
-payload = {
-    "data": {
-        "type": "event",
-        "attributes": {
-            "profile": {
-                "data": {
-                    "type": "profile",
-                    "attributes": {
-                        "email": email
-                    }
-                }
-            },
-            "metric": {
-                "data": {
-                    "type": "metric",
-                    "attributes": {
-                        "name": "OTPG voucher_email"
-                    }
-                }
-            },
-            "properties": {
-                "flight_details": {
-                    "actual_arrival_time": item.get('ActualArrivalTime', "N/A"),  # Default value if missing
-                    "expected_arrival_time": item.get('ExpectedArrivalTime', "N/A"),  # Default value if missing
-                    "pnr_booking_id": id_value,
-                    "time_length_of_delay": item.get('TimeLengthOfDelay', "N/A")
-                },
-                "passengers": [
-                    {
-                        "first_name": item.get('PassengerFirstName', "Unknown"),
-                        "last_name": item.get('PassengerLastName', "Unknown"),
-                        "passenger_type": "adult",
-                        "voucher": {
-                            "expiry_date": item.get('VoucherExpiryDate', "N/A"),
-                            "unique_voucher_code": item.get('VoucherCode', "N/A"),
-                            "voucher_value": item.get('VoucherValue', "N/A")
-                        }
-                    },
-                    {
-                        "first_name": "ChildFirstName",  # Provide a valid first name
-                        "last_name": "ChildLastName",  # Provide a valid last name
-                        "passenger_type": "child",
-                        "voucher": {
-                            "expiry_date": "N/A",  # Replace null with default values
-                            "unique_voucher_code": "N/A",  # Replace null with default values
-                            "voucher_value": "N/A",
-                            "message": "Passenger must be over 18 years old"
-                        }
-                    }
-                ]
-            }
-        }
-    }
+Test Event Name
+test
+
+Response
+{
+  "errorMessage": "Syntax error in module 'lambda_function': unindent does not match any outer indentation level (lambda_function.py, line 34)",
+  "errorType": "Runtime.UserCodeSyntaxError",
+  "requestId": "",
+  "stackTrace": [
+    "  File \"/var/task/lambda_function.py\" Line 34\n       payload = {\n"
+  ]
 }
+
+Function Logs
+[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': unindent does not match any outer indentation level (lambda_function.py, line 34)
+Traceback (most recent call last):
+  File "/var/task/lambda_function.py" Line 34
+       payload = {INIT_REPORT Init Duration: 139.00 ms	Phase: init	Status: error	Error Type: Runtime.UserCodeSyntaxError
+[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': unindent does not match any outer indentation level (lambda_function.py, line 34)
+Traceback (most recent call last):
+  File "/var/task/lambda_function.py" Line 34
+       payload = {INIT_REPORT Init Duration: 1430.71 ms	Phase: invoke	Status: error	Error Type: Runtime.UserCodeSyntaxError
+START RequestId: cd9f9322-7b43-4fec-9d4c-b7f2c0671b80 Version: $LATEST
+END RequestId: cd9f9322-7b43-4fec-9d4c-b7f2c0671b80
+REPORT RequestId: cd9f9322-7b43-4fec-9d4c-b7f2c0671b80	Duration: 1458.78 ms	Billed Duration: 1459 ms	Memory Size: 128 MB	Max Memory Used: 42 MB	Status: error	Error Type: Runtime.UserCodeSyntaxError
+
+Request ID
+cd9f9322-7b43-4fec-9d4c-b7f2c0671b80
