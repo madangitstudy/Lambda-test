@@ -1,22 +1,54 @@
-Test Event Name
-test
-
-Response
-{
-  "statusCode": 400,
-  "body": "Failed to send notification: Bad Request"
+payload = {
+    "data": {
+        "type": "event",
+        "attributes": {
+            "profile": {
+                "data": {
+                    "type": "profile",
+                    "attributes": {
+                        "email": email
+                    }
+                }
+            },
+            "metric": {
+                "data": {
+                    "type": "metric",
+                    "attributes": {
+                        "name": "OTPG voucher_email"
+                    }
+                }
+            },
+            "properties": {
+                "flight_details": {
+                    "actual_arrival_time": item.get('ActualArrivalTime', "N/A"),  # Default value if missing
+                    "expected_arrival_time": item.get('ExpectedArrivalTime', "N/A"),  # Default value if missing
+                    "pnr_booking_id": id_value,
+                    "time_length_of_delay": item.get('TimeLengthOfDelay', "N/A")
+                },
+                "passengers": [
+                    {
+                        "first_name": item.get('PassengerFirstName', "Unknown"),
+                        "last_name": item.get('PassengerLastName', "Unknown"),
+                        "passenger_type": "adult",
+                        "voucher": {
+                            "expiry_date": item.get('VoucherExpiryDate', "N/A"),
+                            "unique_voucher_code": item.get('VoucherCode', "N/A"),
+                            "voucher_value": item.get('VoucherValue', "N/A")
+                        }
+                    },
+                    {
+                        "first_name": "ChildFirstName",  # Provide a valid first name
+                        "last_name": "ChildLastName",  # Provide a valid last name
+                        "passenger_type": "child",
+                        "voucher": {
+                            "expiry_date": "N/A",  # Replace null with default values
+                            "unique_voucher_code": "N/A",  # Replace null with default values
+                            "voucher_value": "N/A",
+                            "message": "Passenger must be over 18 years old"
+                        }
+                    }
+                ]
+            }
+        }
+    }
 }
-
-Function Logs
-START RequestId: fa08a699-1217-4d1b-9f82-f4fa8222a840 Version: $LATEST
-ID value received: TVUVPJ-b2eb72
-DynamoDB response: {'Item': {'ArrivalCity': 'Toronto Pearson ', 'VoucherValue': '$60CAD', 'DepartureCity': 'Vancouver ', 'PassengerFirstName': 'CHARLES', 'ArrivalAirportCode': 'YYZ', 'PassengerLastName': 'SUAREZ', 'Email': None, 'PNR': 'TVUVPJ', 'VoucherID': 'n/a', 'VoucherExpiryDate': '2024-12-16 19:50:02', 'FlightStatus': 'delayed', 'VoucherCode': 'VCHR-VFZVVlBK', 'ID': 'TVUVPJ-b2eb72', 'DepartureAirportCode': 'YVR', 'FlightNumber': '602'}, 'ResponseMetadata': {'RequestId': 'EB680E9JQFSUQ651H5OIQ46HNVVV4KQNSO5AEMVJF66Q9ASUAAJG', 'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'Server', 'date': 'Fri, 18 Oct 2024 18:45:59 GMT', 'content-type': 'application/x-amz-json-1.0', 'content-length': '490', 'connection': 'keep-alive', 'x-amzn-requestid': 'EB680E9JQFSUQ651H5OIQ46HNVVV4KQNSO5AEMVJF66Q9ASUAAJG', 'x-amz-crc32': '2603277233'}, 'RetryAttempts': 0}}
-Email not found in DynamoDB. Using dummy email for testing.
-Sending request to Klaviyo with headers: {'Authorization': 'Klaviyo-API-Key pk_c1031f8fd7cae03b92be86f68eb85bf2f4', 'Content-Type': 'application/json', 'Revision': '2023-01-01'}
-Payload: {"data": {"type": "event", "attributes": {"profile": {"data": {"type": "profile", "attributes": {"email": "dummy@example.com"}}}, "metric": {"data": {"type": "metric", "attributes": {"name": "OTPG voucher_email"}}}, "properties": {"flight_details": {"actual_arrival_time": null, "expected_arrival_time": null, "pnr_booking_id": "TVUVPJ-b2eb72", "time_length_of_delay": null}, "passengers": [{"first_name": "CHARLES", "last_name": "SUAREZ", "passenger_type": "adult", "voucher": {"expiry_date": "2024-12-16 19:50:02", "unique_voucher_code": "VCHR-VFZVVlBK", "voucher_value": "$60CAD"}}, {"first_name": "Unknown", "last_name": "Unknown", "passenger_type": "child", "voucher": {"expiry_date": null, "unique_voucher_code": null, "voucher_value": null, "message": "Passenger must be over 18 years old"}}]}}}}
-HTTP Error: 400 - Bad Request
-END RequestId: fa08a699-1217-4d1b-9f82-f4fa8222a840
-REPORT RequestId: fa08a699-1217-4d1b-9f82-f4fa8222a840	Duration: 1624.46 ms	Billed Duration: 1625 ms	Memory Size: 128 MB	Max Memory Used: 80 MB	Init Duration: 476.15 ms
-
-Request ID
-fa08a699-1217-4d1b-9f82-f4fa8222a840
