@@ -1,151 +1,28 @@
-import json
-import boto3
-import urllib.request
-import urllib.error
+Test Event Name
+test
 
-def lambda_handler(event, context):
-    # Initialize DynamoDB client
-    dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('VoucherDetails')  # Your DynamoDB table name
+Response
+{
+  "errorMessage": "name 'json_payload' is not defined",
+  "errorType": "NameError",
+  "requestId": "1b96561e-ca93-4772-964f-fd2209651600",
+  "stackTrace": [
+    "  File \"/var/task/lambda_function.py\", line 123, in lambda_handler\n    req = urllib.request.Request(api_endpoint, data=json_payload, method=\"POST\")\n"
+  ]
+}
 
-    # Extract ID from event
-    id_value = event.get("id")
-    
-    if not id_value:
-        return {
-            "statusCode": 400,
-            "body": "ID value is missing from the event input."
-        }
-    
-    print(f"ID value received: {id_value}")
+Function Logs
+START RequestId: 1b96561e-ca93-4772-964f-fd2209651600 Version: $LATEST
+ID value received: TVUVPJ-b2eb72
+Fetching item with key: {'ID': 'TVUVPJ-b2eb72'}
+DynamoDB response: {'Item': {'ArrivalCity': 'Toronto Pearson ', 'VoucherValue': '$60CAD', 'DepartureCity': 'Vancouver ', 'PassengerFirstName': 'CHARLES', 'ArrivalAirportCode': 'YYZ', 'PassengerLastName': 'SUAREZ', 'Email': None, 'PNR': 'TVUVPJ', 'VoucherID': 'n/a', 'VoucherExpiryDate': '2024-12-16 19:50:02', 'FlightStatus': 'delayed', 'VoucherCode': 'VCHR-VFZVVlBK', 'ID': 'TVUVPJ-b2eb72', 'DepartureAirportCode': 'YVR', 'FlightNumber': '602'}, 'ResponseMetadata': {'RequestId': 'HRPVM9US5JHCPASHHLE2A1MTLNVV4KQNSO5AEMVJF66Q9ASUAAJG', 'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'Server', 'date': 'Fri, 18 Oct 2024 17:40:48 GMT', 'content-type': 'application/x-amz-json-1.0', 'content-length': '490', 'connection': 'keep-alive', 'x-amzn-requestid': 'HRPVM9US5JHCPASHHLE2A1MTLNVV4KQNSO5AEMVJF66Q9ASUAAJG', 'x-amz-crc32': '2603277233'}, 'RetryAttempts': 0}}
+Email fetched: None
+LAMBDA_WARNING: Unhandled exception. The most likely cause is an issue in the function code. However, in rare cases, a Lambda runtime update can cause unexpected function behavior. For functions using managed runtimes, runtime updates can be triggered by a function change, or can be applied automatically. To determine if the runtime has been updated, check the runtime version in the INIT_START log entry. If this error correlates with a change in the runtime version, you may be able to mitigate this error by temporarily rolling back to the previous runtime version. For more information, see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-update.html
+[ERROR] NameError: name 'json_payload' is not defined
+Traceback (most recent call last):
+  File "/var/task/lambda_function.py", line 123, in lambda_handler
+    req = urllib.request.Request(api_endpoint, data=json_payload, method="POST")END RequestId: 1b96561e-ca93-4772-964f-fd2209651600
+REPORT RequestId: 1b96561e-ca93-4772-964f-fd2209651600	Duration: 2814.68 ms	Billed Duration: 2815 ms	Memory Size: 128 MB	Max Memory Used: 78 MB	Init Duration: 287.54 ms
 
-    # Fetch the voucher details from DynamoDB using the ID
-    try:
-        print(f"Fetching item with key: {{'ID': '{id_value}'}}")
-
-        response = table.get_item(Key={'ID': id_value})  # Replace 'ID' with your actual primary key name
-        voucher_details = response.get('Item')
-
-        print(f"DynamoDB response: {response}")
-
-        if not voucher_details:
-            return {
-                "statusCode": 404,
-                "body": "Voucher details not found."
-            }
-    except Exception as e:
-        print(f"Error fetching from DynamoDB: {str(e)}")
-        return {
-            "statusCode": 500,
-            "body": "Error fetching from DynamoDB."
-        }
-
-    # Extract relevant details from DynamoDB
-    email = voucher_details.get('Email')  # Get email from DynamoDB
-    voucher_code = voucher_details.get('VoucherCode')  # Get voucher code from DynamoDB
-    voucher_expiry_date = voucher_details.get('VoucherExpiryDate')  # Get expiry date from DynamoDB
-    voucher_value = voucher_details.get('VoucherValue')  # Get voucher value from DynamoDB
-
-    # Log email for debugging
-    print(f"Email fetched: {email}")
-
-    # Convert voucher_value to float if it is a string
-    if isinstance(voucher_value, str):
-        voucher_value = float(voucher_value.replace('$', '').replace('CAD', '').strip())
-
-    # Check if child passenger details exist in DynamoDB
-    child_first_name = voucher_details.get('ChildPassengerFirstName', None)
-    child_last_name = voucher_details.get('ChildPassengerLastName', None)
-
-    # Prepare the data payload for Klaviyo
-    payload = {
-        "data": {
-            "type": "event",
-            "attributes": {
-                "profile": {
-                    "data": {
-                        "type": "profile",
-                        "attributes": {
-                            "email": email if email else "default@example.com"  # Default value if email is None
-                        }
-                    }
-                },
-                "metric": {
-                    "data": {
-                        "type": "metric",
-                        "attributes": {
-                            "name": "OTPG voucher_email"  # Event name
-                        }
-                    }
-                },
-                "properties": {
-                    "flight_details": {
-                        "actual_arrival_time": "2023-07-26T13:00:00",  # Keep as is
-                        "expected_arrival_time": "2023-07-26T12:00:00",  # Keep as is
-                        "pnr_booking_id": id_value,  # Updated to use ID/PNR from DynamoDB
-                        "time_length_of_delay": 60  # Keep as is
-                    },
-                    "passengers": [
-                        {
-                            "first_name": voucher_details.get('AdultPassengerFirstName'),  # Updated from DynamoDB for adult
-                            "last_name": voucher_details.get('AdultPassengerLastName'),    # Updated from DynamoDB for adult
-                            "passenger_type": "adult",  # Keep as is
-                            "voucher": {
-                                "expiry_date": voucher_expiry_date,  # Updated expiry date from DynamoDB
-                                "unique_voucher_code": voucher_code,  # Updated voucher code from DynamoDB
-                                "voucher_value": voucher_value  # Updated voucher value from DynamoDB
-                            }
-                        },
-                        {
-                            "first_name": child_first_name if child_first_name else "Unknown",  # Get child name or default
-                            "last_name": child_last_name if child_last_name else "Unknown",    # Get child last name or default
-                            "passenger_type": "child",  # Keep as is
-                            "voucher": {
-                                "expiry_date": voucher_expiry_date,  # Set same expiry date as adult passenger
-                                "unique_voucher_code": f"CHILD-{voucher_code}",  # Modify voucher code for child
-                                "voucher_value": voucher_value / 2 if voucher_value else None,  # Set child voucher value to half of adult
-                                "message": "Passenger must be over 18 years old"  # Keep message as is
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    }
-
-    # Prepare request to Klaviyo
-    api_endpoint = "https://a.klaviyo.com/api/events/"
-    endpoint_token = "Klaviyo-API-Key pk_c1031f8fd7cae03b92be86f68eb85bf2f4"  # Ensure this is the correct key
-    revision_date = "2023-10-10"  # Set the required revision date
-
-    headers = {
-        'Authorization': endpoint_token,
-        'REVISION': revision_date,  # Change to capitalized 'REVISION'
-        'Content-Type': 'application/json'
-    }
-
-    # Send the request to Klaviyo
-    try:
-        req = urllib.request.Request(api_endpoint, data=json.dumps(payload).encode('utf-8'), headers=headers)
-        with urllib.request.urlopen(req) as response:
-            response_body = response.read().decode('utf-8')
-            print(f"Klaviyo response: {response_body}")  # Log response from Klaviyo
-    except urllib.error.HTTPError as e:
-        error_message = e.read().decode('utf-8')
-        print(f"Error sending to Klaviyo: {error_message}")
-        return {
-            "statusCode": 500,
-            "body": f"Error sending to Klaviyo: {error_message}"
-        }
-    except Exception as e:
-        print(f"Unexpected error: {str(e)}")
-        return {
-            "statusCode": 500,
-            "body": "Unexpected error occurred."
-        }
-
-    return {
-        "statusCode": 200,
-        "body": json.dumps("Event processed successfully."),
-        "payload": payload  # Return the payload for debugging purposes
-    }
+Request ID
+1b96561e-ca93-4772-964f-fd2209651600
