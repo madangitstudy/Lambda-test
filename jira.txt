@@ -1,61 +1,14 @@
 {
-  "id": "TVUVPJ-b2eb72",
-  "data": {
-    "type": "event",
-    "attributes": {
-      "profile": {
-        "data": {
-          "type": "profile",
-          "attributes": {
-            "email": "dylanreeveswasik@gmail.com"
-          }
-        }
-      },
-      "metric": {
-        "data": {
-          "type": "metric",
-          "attributes": {
-            "name": "OTPG voucher_email"
-          }
-        }
-      },
-      "properties": {
-        "flight_details": {
-          "actual_arrival_time": "2023-07-26T13:00:00",
-          "arrival_airport_code": "LAX",
-          "arrival_city": "Los Angeles",
-          "departure_airport_code": "JFK",
-          "departure_city": "New York",
-          "expected_arrival_time": "2023-07-26T12:00:00",
-          "flight_number": "AA101",
-          "flight_status": "Delayed",
-          "pnr_booking_id": "ABC123",
-          "time_length_of_delay": 60
-        },
-        "passengers": [
-          {
-            "first_name": "John",
-            "last_name": "Doe",
-            "passenger_type": "adult",
-            "voucher": {
-              "expiry_date": "2023-07-31",
-              "unique_voucher_code": "Voucher123",
-              "voucher_value": 50
+    "errors": [
+        {
+            "id": "bb9b844d-7443-45e0-af57-7475aae35f98",
+            "status": 400,
+            "code": "invalid_revision",
+            "title": "'REVISION' is a required header and must be of the format YYYY-MM-DD",
+            "detail": "'REVISION' is a required header and must be of the format YYYY-MM-DD",
+            "source": {
+                "pointer": "/data/"
             }
-          },
-          {
-            "first_name": "Jane",
-            "last_name": "Doe",
-            "passenger_type": "child",
-            "voucher": {
-              "expiry_date": null,
-              "unique_voucher_code": null,
-              "voucher_value": null,
-              "message": "Passenger must be over 18 years old"
-            }
-          }
-        ]
-      }
-    }
-  }
+        }
+    ]
 }
