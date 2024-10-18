@@ -1,80 +1,20 @@
-import json
-import urllib.request
-import base64
-import os
-from datetime import datetime, timedelta
+Test Event Name
+test
 
-def lambda_handler(event, context):
-    # Define the URL for the API
-    url = "https://flairair-api.intelisystraining.ca/RESTv1/vouchers/Generate?fields={fields}"
+Response
+{
+  "statusCode": 500,
+  "body": "Error sending to Klaviyo: {\"errors\":[{\"id\":\"8e021e18-a978-4ec5-83f9-fe23737b3dfc\",\"status\":400,\"code\":\"invalid\",\"title\":\"Invalid input.\",\"detail\":\"At least one profile identifier is required [email, phone_number or id (in place of external_id used for profiles endpoints)] Any email must be valid. This request failed with reason: missing valid identifier.\",\"source\":{\"pointer\":\"profile\"},\"links\":{},\"meta\":{}}]}"
+}
 
-    # Define the expiry date (30 days from now)
-    expiry_date = (datetime.utcnow() + timedelta(days=60)).isoformat() + "Z"
+Function Logs
+START RequestId: 28c42cca-8fa7-4497-b774-a6986d095753 Version: $LATEST
+ID value received: TVUVPJ-b2eb72
+Fetching item with key: {'ID': 'TVUVPJ-b2eb72'}
+DynamoDB response: {'Item': {'ArrivalCity': 'Toronto Pearson ', 'VoucherValue': '$60CAD', 'DepartureCity': 'Vancouver ', 'PassengerFirstName': 'CHARLES', 'ArrivalAirportCode': 'YYZ', 'PassengerLastName': 'SUAREZ', 'Email': None, 'PNR': 'TVUVPJ', 'VoucherID': 'n/a', 'VoucherExpiryDate': '2024-12-16 19:50:02', 'FlightStatus': 'delayed', 'VoucherCode': 'VCHR-VFZVVlBK', 'ID': 'TVUVPJ-b2eb72', 'DepartureAirportCode': 'YVR', 'FlightNumber': '602'}, 'ResponseMetadata': {'RequestId': 'Q2DLCKA44I7JPGDI66K6O49L5BVV4KQNSO5AEMVJF66Q9ASUAAJG', 'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'Server', 'date': 'Fri, 18 Oct 2024 16:56:19 GMT', 'content-type': 'application/x-amz-json-1.0', 'content-length': '490', 'connection': 'keep-alive', 'x-amzn-requestid': 'Q2DLCKA44I7JPGDI66K6O49L5BVV4KQNSO5AEMVJF66Q9ASUAAJG', 'x-amz-crc32': '2603277233'}, 'RetryAttempts': 0}}
+Error sending to Klaviyo: {"errors":[{"id":"8e021e18-a978-4ec5-83f9-fe23737b3dfc","status":400,"code":"invalid","title":"Invalid input.","detail":"At least one profile identifier is required [email, phone_number or id (in place of external_id used for profiles endpoints)] Any email must be valid. This request failed with reason: missing valid identifier.","source":{"pointer":"profile"},"links":{},"meta":{}}]}
+END RequestId: 28c42cca-8fa7-4497-b774-a6986d095753
+REPORT RequestId: 28c42cca-8fa7-4497-b774-a6986d095753	Duration: 3782.80 ms	Billed Duration: 3783 ms	Memory Size: 128 MB	Max Memory Used: 80 MB	Init Duration: 307.36 ms
 
-    # Construct the payload
-    payload = {
-        "voucherType": {
-            "href": "/voucherTypes/a%C6%92Jj2ImKybdP8tQcem2rUrd3sa66LEFx%C2%A5BLJTdx9on4=",
-            "key": os.environ['VOUCHER_KEY'],
-            "name": "Late Arrival"
-        },
-        "generationNumber": 2,
-        "password": None,
-        "personalIdentificationNumber": None,
-        "autoGeneratePersonalIdentificationNumber": {
-            "length": 4
-        },
-        "autoGeneratePassword": {
-            "length": 6
-        },
-        "expiryDate": expiry_date,
-        "available": 20,
-        "reason": "Sample reason for generating this voucher",
-        "bookingWindow": "none",
-        "voucherValue": 60,
-        "eligiblePassengers": [
-            {
-                "firstName": "Alice",
-                "lastName": "Smit",
-                "pnr": "PNR123"
-            },
-            {
-                "firstName": "Bob",
-                "lastName": "Johnson",
-                "pnr": "PNR456"
-            }
-        ]
-    }
-
-    # Create a request object
-    req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), method='POST')
-    req.add_header('Content-Type', 'application/json')
-
-    # Add Basic Authentication
-    username = os.environ['USERNAME']
-    password = os.environ['PASSWORD']
-    credentials = f"{username}:{password}"
-    b64_credentials = base64.b64encode(credentials.encode()).decode()
-    req.add_header('Authorization', f'Basic {b64_credentials}')
-
-    try:
-        # Make the API request
-        with urllib.request.urlopen(req) as response:
-            response_body = response.read()
-            response_data = json.loads(response_body)
-            return {
-                'statusCode': 200,
-                'body': response_data
-            }
-    except urllib.error.HTTPError as e:
-        error_message = e.read().decode('utf-8')
-        error_response = {"error": "An error occurred while processing your request.", "details": error_message}
-        return {
-            'statusCode': e.code,
-            'body': error_response
-        }
-    except Exception as e:
-        return {
-            'statusCode': 500,
-            'body': str(e)
-        }
+Request ID
+28c42cca-8fa7-4497-b774-a6986d095753
