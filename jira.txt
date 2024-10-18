@@ -1,129 +1,22 @@
-import json
-import boto3
-import urllib.parse
-import urllib.request
-from datetime import datetime, timedelta
+Test Event Name
+test
 
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('VoucherDetails')
+Response
+{
+  "statusCode": 400,
+  "body": "Failed to send notification: Bad Request"
+}
 
-def lambda_handler(event, context):
-    # Extract the ID from the event
-    id_value = event['id']
-    print(f"ID value received: {id_value}")
+Function Logs
+START RequestId: fa08a699-1217-4d1b-9f82-f4fa8222a840 Version: $LATEST
+ID value received: TVUVPJ-b2eb72
+DynamoDB response: {'Item': {'ArrivalCity': 'Toronto Pearson ', 'VoucherValue': '$60CAD', 'DepartureCity': 'Vancouver ', 'PassengerFirstName': 'CHARLES', 'ArrivalAirportCode': 'YYZ', 'PassengerLastName': 'SUAREZ', 'Email': None, 'PNR': 'TVUVPJ', 'VoucherID': 'n/a', 'VoucherExpiryDate': '2024-12-16 19:50:02', 'FlightStatus': 'delayed', 'VoucherCode': 'VCHR-VFZVVlBK', 'ID': 'TVUVPJ-b2eb72', 'DepartureAirportCode': 'YVR', 'FlightNumber': '602'}, 'ResponseMetadata': {'RequestId': 'EB680E9JQFSUQ651H5OIQ46HNVVV4KQNSO5AEMVJF66Q9ASUAAJG', 'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'Server', 'date': 'Fri, 18 Oct 2024 18:45:59 GMT', 'content-type': 'application/x-amz-json-1.0', 'content-length': '490', 'connection': 'keep-alive', 'x-amzn-requestid': 'EB680E9JQFSUQ651H5OIQ46HNVVV4KQNSO5AEMVJF66Q9ASUAAJG', 'x-amz-crc32': '2603277233'}, 'RetryAttempts': 0}}
+Email not found in DynamoDB. Using dummy email for testing.
+Sending request to Klaviyo with headers: {'Authorization': 'Klaviyo-API-Key pk_c1031f8fd7cae03b92be86f68eb85bf2f4', 'Content-Type': 'application/json', 'Revision': '2023-01-01'}
+Payload: {"data": {"type": "event", "attributes": {"profile": {"data": {"type": "profile", "attributes": {"email": "dummy@example.com"}}}, "metric": {"data": {"type": "metric", "attributes": {"name": "OTPG voucher_email"}}}, "properties": {"flight_details": {"actual_arrival_time": null, "expected_arrival_time": null, "pnr_booking_id": "TVUVPJ-b2eb72", "time_length_of_delay": null}, "passengers": [{"first_name": "CHARLES", "last_name": "SUAREZ", "passenger_type": "adult", "voucher": {"expiry_date": "2024-12-16 19:50:02", "unique_voucher_code": "VCHR-VFZVVlBK", "voucher_value": "$60CAD"}}, {"first_name": "Unknown", "last_name": "Unknown", "passenger_type": "child", "voucher": {"expiry_date": null, "unique_voucher_code": null, "voucher_value": null, "message": "Passenger must be over 18 years old"}}]}}}}
+HTTP Error: 400 - Bad Request
+END RequestId: fa08a699-1217-4d1b-9f82-f4fa8222a840
+REPORT RequestId: fa08a699-1217-4d1b-9f82-f4fa8222a840	Duration: 1624.46 ms	Billed Duration: 1625 ms	Memory Size: 128 MB	Max Memory Used: 80 MB	Init Duration: 476.15 ms
 
-    # Fetch the item from DynamoDB
-    response = table.get_item(Key={'ID': id_value})
-    item = response.get('Item')
-
-    if not item:
-        return {
-            "statusCode": 404,
-            "body": "Item not found."
-        }
-
-    print(f"DynamoDB response: {response}")
-
-    # Fetch the email; for testing, we'll use a dummy email if it's None
-    email = item.get('Email')
-    if not email:
-        email = "dummy@example.com"  # Dummy email for testing
-        print("Email not found in DynamoDB. Using dummy email for testing.")
-
-    # Prepare payload for Klaviyo
-    payload = {
-        "data": {
-            "type": "event",
-            "attributes": {
-                "profile": {
-                    "data": {
-                        "type": "profile",
-                        "attributes": {
-                            "email": email
-                        }
-                    }
-                },
-                "metric": {
-                    "data": {
-                        "type": "metric",
-                        "attributes": {
-                            "name": "OTPG voucher_email"
-                        }
-                    }
-                },
-                "properties": {
-                    "flight_details": {
-                        "actual_arrival_time": item.get('ActualArrivalTime'),
-                        "expected_arrival_time": item.get('ExpectedArrivalTime'),
-                        "pnr_booking_id": id_value,
-                        "time_length_of_delay": item.get('TimeLengthOfDelay')
-                    },
-                    "passengers": [
-                        {
-                            "first_name": item.get('PassengerFirstName'),
-                            "last_name": item.get('PassengerLastName'),
-                            "passenger_type": "adult",
-                            "voucher": {
-                                "expiry_date": item.get('VoucherExpiryDate'),
-                                "unique_voucher_code": item.get('VoucherCode'),
-                                "voucher_value": item.get('VoucherValue')
-                            }
-                        },
-                        {
-                            "first_name": "Unknown",  # Example value
-                            "last_name": "Unknown",    # Example value
-                            "passenger_type": "child",
-                            "voucher": {
-                                "expiry_date": None,
-                                "unique_voucher_code": None,
-                                "voucher_value": None,
-                                "message": "Passenger must be over 18 years old"
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    }
-
-    # Prepare the request to Klaviyo
-    klaviyo_url = "https://a.klaviyo.com/api/events/"
-    klaviyo_api_key = "pk_c1031f8fd7cae03b92be86f68eb85bf2f4"  # Replace with your actual API key
-    headers = {
-        "Authorization": f"Klaviyo-API-Key {klaviyo_api_key}",
-        "Content-Type": "application/json",
-        "Revision": "2023-01-01"
-    }
-
-    # Debugging output
-    print(f"Sending request to Klaviyo with headers: {headers}")
-    print(f"Payload: {json.dumps(payload)}")
-
-    # Make the request using urllib
-    try:
-        req = urllib.request.Request(
-            klaviyo_url,
-            data=json.dumps(payload).encode('utf-8'),
-            headers=headers
-        )
-        with urllib.request.urlopen(req) as response:
-            response_body = response.read()
-            print(f"Klaviyo response: {response_body.decode('utf-8')}")
-
-    except urllib.error.HTTPError as e:
-        print(f"HTTP Error: {e.code} - {e.reason}")
-        return {
-            "statusCode": e.code,
-            "body": f"Failed to send notification: {e.reason}"
-        }
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        return {
-            "statusCode": 500,
-            "body": "An error occurred while processing the request."
-        }
-
-    return {
-        "statusCode": 200,
-        "body": "Event processed successfully."
-    }
+Request ID
+fa08a699-1217-4d1b-9f82-f4fa8222a840
