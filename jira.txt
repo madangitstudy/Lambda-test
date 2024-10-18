@@ -1,3 +1,60 @@
-S. No	date of departure	STD (PST)	STA (EST)	flight no.	departure	arrival	1 adlt under 18 yrs	18+, 12-18 yrs, 1 inft, 1 chd	2 adlts
-1	15-Oct-24	16:50	0:20	F8606	yvr	yyz	J63E2K	4W2Q29	BGJXMW
-email	sheila.dumlao@flyflair.com
+{
+  "ID": "TVUVPJ-b2eb72",
+  "PNR": "TVUVPJ",
+  "data": {
+    "type": "event",
+    "attributes": {
+      "profile": {
+        "data": {
+          "type": "profile",
+          "attributes": {
+            "email": "sheila.dumlao@flyflair.com"
+          }
+        }
+      },
+      "metric": {
+        "data": {
+          "type": "metric",
+          "attributes": {
+            "name": "OTPG voucher_email"
+          }
+        }
+      },
+      "properties": {
+        "flight_details": {
+          "date_of_departure": "15-Oct-24",
+          "flight_number": "F8606",
+          "departure_airport": "YVR",
+          "arrival_airport": "YYZ",
+          "actual_arrival_time": null,
+          "expected_arrival_time": null,
+          "pnr_booking_id": "TVUVPJ-b2eb72",
+          "time_length_of_delay": null
+        },
+        "passengers": [
+          {
+            "first_name": "CHARLES",
+            "last_name": "SUAREZ",
+            "passenger_type": "adult",
+            "voucher": {
+              "expiry_date": "2024-12-16 19:50:02",
+              "unique_voucher_code": "VCHR-VFZVVlBK",
+              "voucher_value": "$60CAD"
+            }
+          },
+          {
+            "first_name": "Unknown",
+            "last_name": "Unknown",
+            "passenger_type": "child",
+            "voucher": {
+              "expiry_date": null,
+              "unique_voucher_code": null,
+              "voucher_value": null,
+              "message": "Passenger must be over 18 years old"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
