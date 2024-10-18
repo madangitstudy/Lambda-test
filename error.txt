@@ -3,4 +3,4 @@ def lambda_handler(event, context):
     api_endpoint = "https://a.klaviyo.com/api/events/"
     endpoint_token = "Klaviyo-API-Key pk_c1031f8fd7cae03b92be86f68eb85bf2f4"  # Ensure this is the correct key
     revision_date = "2023-10-10"  # Set the required revision date
-I need to send the above output to Klaviyo account
+I need to push the notification  to Klaviyo account
