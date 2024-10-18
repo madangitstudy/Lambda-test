@@ -1,124 +1,22 @@
-import json
-import boto3
-import requests
-from datetime import datetime, timedelta
+Test Event Name
+test
 
-dynamodb = boto3.resource('dynamodb')
-table_name = 'VoucherDetails'
-klaviyo_api_url = 'https://a.klaviyo.com/api/events/'
-klaviyo_api_key = 'YOUR_KLAVIYO_API_KEY'  # Replace with your actual API key
+Response
+{
+  "errorMessage": "Unable to import module 'lambda_function': No module named 'requests'",
+  "errorType": "Runtime.ImportModuleError",
+  "requestId": "",
+  "stackTrace": []
+}
 
-def lambda_handler(event, context):
-    # Log the incoming event
-    print(f"Received event: {json.dumps(event)}")
+Function Logs
+[ERROR] Runtime.ImportModuleError: Unable to import module 'lambda_function': No module named 'requests'
+Traceback (most recent call last):INIT_REPORT Init Duration: 334.33 ms	Phase: init	Status: error	Error Type: Runtime.ImportModuleError
+[ERROR] Runtime.ImportModuleError: Unable to import module 'lambda_function': No module named 'requests'
+Traceback (most recent call last):INIT_REPORT Init Duration: 3943.99 ms	Phase: invoke	Status: error	Error Type: Runtime.ImportModuleError
+START RequestId: f2d2e45f-e784-4f01-9c03-89b7adc91965 Version: $LATEST
+END RequestId: f2d2e45f-e784-4f01-9c03-89b7adc91965
+REPORT RequestId: f2d2e45f-e784-4f01-9c03-89b7adc91965	Duration: 3953.14 ms	Billed Duration: 3954 ms	Memory Size: 128 MB	Max Memory Used: 60 MB	Status: error	Error Type: Runtime.ImportModuleError
 
-    # Extract the ID from the event
-    event_id = event.get('id')
-    print(f"ID value received: {event_id}")
-
-    # Fetch the item from DynamoDB
-    try:
-        table = dynamodb.Table(table_name)
-        response = table.get_item(Key={'ID': event_id})
-        dynamodb_response = response
-
-        if 'Item' not in dynamodb_response:
-            return {
-                "statusCode": 404,
-                "body": json.dumps({"error": "Item not found in DynamoDB."})
-            }
-
-        print(f"DynamoDB response: {dynamodb_response}")
-
-        # Extract details from the DynamoDB response
-        email = dynamodb_response['Item'].get('Email')
-
-        # Check if email is None
-        if email is None:
-            print("Email not found in DynamoDB. Using dummy email for testing.")
-            email = "test@example.com"  # Dummy email for testing
-
-        # Prepare the payload for Klaviyo
-        payload = {
-            "data": {
-                "type": "event",
-                "attributes": {
-                    "profile": {
-                        "data": {
-                            "type": "profile",
-                            "attributes": {
-                                "email": email
-                            }
-                        }
-                    },
-                    "metric": {
-                        "data": {
-                            "type": "metric",
-                            "attributes": {
-                                "name": "OTPG voucher_email"
-                            }
-                        }
-                    },
-                    "properties": {
-                        "flight_details": {
-                            "actual_arrival_time": dynamodb_response['Item']['FlightStatus'],
-                            "arrival_airport_code": dynamodb_response['Item']['ArrivalAirportCode'],
-                            "arrival_city": dynamodb_response['Item']['ArrivalCity'],
-                            "departure_airport_code": dynamodb_response['Item']['DepartureAirportCode'],
-                            "departure_city": dynamodb_response['Item']['DepartureCity'],
-                            "expected_arrival_time": datetime.now().isoformat(),  # Modify as needed
-                            "flight_number": dynamodb_response['Item']['FlightNumber'],
-                            "flight_status": "Delayed",  # Modify as needed
-                            "pnr_booking_id": event_id,
-                            "time_length_of_delay": 60  # Modify as needed
-                        },
-                        "passengers": [
-                            {
-                                "first_name": dynamodb_response['Item'].get('PassengerFirstName'),
-                                "last_name": dynamodb_response['Item'].get('PassengerLastName'),
-                                "passenger_type": "adult",
-                                "voucher": {
-                                    "expiry_date": (datetime.now() + timedelta(days=30)).isoformat(),  # Expiry date set to 30 days from now
-                                    "unique_voucher_code": dynamodb_response['Item'].get('VoucherCode'),
-                                    "voucher_value": dynamodb_response['Item'].get('VoucherValue')
-                                }
-                            },
-                            {
-                                "first_name": "Jane",  # Example child passenger
-                                "last_name": "Doe",
-                                "passenger_type": "child",
-                                "voucher": {
-                                    "expiry_date": None,
-                                    "unique_voucher_code": None,
-                                    "voucher_value": None,
-                                    "message": "Passenger must be over 18 years old"
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-
-        # Send the event to Klaviyo
-        headers = {
-            'Authorization': f'Klaviyo-API-Key {klaviyo_api_key}',
-            'Content-Type': 'application/json'
-        }
-
-        klaviyo_response = requests.post(klaviyo_api_url, headers=headers, json=payload)
-
-        # Log the response from Klaviyo
-        print(f"Klaviyo response: {klaviyo_response.status_code} - {klaviyo_response.text}")
-
-        return {
-            "statusCode": 200,
-            "body": json.dumps({"message": "Event processed successfully."})
-        }
-
-    except Exception as e:
-        print(f"Error processing event: {str(e)}")
-        return {
-            "statusCode": 500,
-            "body": json.dumps({"error": str(e)})
-        }
+Request ID
+f2d2e45f-e784-4f01-9c03-89b7adc91965
