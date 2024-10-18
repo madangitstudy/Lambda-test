@@ -117,23 +117,15 @@ def lambda_handler(event, context):
     api_endpoint = "https://a.klaviyo.com/api/events/"
     endpoint_token = "Klaviyo-API-Key pk_c1031f8fd7cae03b92be86f68eb85bf2f4"  # Ensure this is the correct key
     revision_date = "2023-10-10"  # Set the required revision date
-    
-    
+
     # Create request
-    req = urllib.request.Request(api_endpoint, data=json_payload, method="POST")
+    req = urllib.request.Request(api_endpoint, data=json.dumps(payload).encode('utf-8'), method="POST")
     req.add_header("Authorization", endpoint_token)  # Use "Authorization" header
     req.add_header("Content-Type", "application/json")
     req.add_header("REVISION", revision_date)  # Add the required REVISION header
 
-    headers = {
-        'Authorization': endpoint_token,
-        'REVISION': revision_date,  # Change to capitalized 'REVISION'
-        'Content-Type': 'application/json'
-    }
-
     # Send the request to Klaviyo
     try:
-        req = urllib.request.Request(api_endpoint, data=json.dumps(payload).encode('utf-8'), headers=headers)
         with urllib.request.urlopen(req) as response:
             response_body = response.read().decode('utf-8')
             print(f"Klaviyo response: {response_body}")  # Log response from Klaviyo
@@ -156,32 +148,3 @@ def lambda_handler(event, context):
         "body": json.dumps("Event processed successfully."),
         "payload": payload  # Return the payload for debugging purposes
     }
-
-Test Event Name
-test
-
-Response
-{
-  "errorMessage": "name 'json_payload' is not defined",
-  "errorType": "NameError",
-  "requestId": "1b96561e-ca93-4772-964f-fd2209651600",
-  "stackTrace": [
-    "  File \"/var/task/lambda_function.py\", line 123, in lambda_handler\n    req = urllib.request.Request(api_endpoint, data=json_payload, method=\"POST\")\n"
-  ]
-}
-
-Function Logs
-START RequestId: 1b96561e-ca93-4772-964f-fd2209651600 Version: $LATEST
-ID value received: TVUVPJ-b2eb72
-Fetching item with key: {'ID': 'TVUVPJ-b2eb72'}
-DynamoDB response: {'Item': {'ArrivalCity': 'Toronto Pearson ', 'VoucherValue': '$60CAD', 'DepartureCity': 'Vancouver ', 'PassengerFirstName': 'CHARLES', 'ArrivalAirportCode': 'YYZ', 'PassengerLastName': 'SUAREZ', 'Email': None, 'PNR': 'TVUVPJ', 'VoucherID': 'n/a', 'VoucherExpiryDate': '2024-12-16 19:50:02', 'FlightStatus': 'delayed', 'VoucherCode': 'VCHR-VFZVVlBK', 'ID': 'TVUVPJ-b2eb72', 'DepartureAirportCode': 'YVR', 'FlightNumber': '602'}, 'ResponseMetadata': {'RequestId': 'HRPVM9US5JHCPASHHLE2A1MTLNVV4KQNSO5AEMVJF66Q9ASUAAJG', 'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'Server', 'date': 'Fri, 18 Oct 2024 17:40:48 GMT', 'content-type': 'application/x-amz-json-1.0', 'content-length': '490', 'connection': 'keep-alive', 'x-amzn-requestid': 'HRPVM9US5JHCPASHHLE2A1MTLNVV4KQNSO5AEMVJF66Q9ASUAAJG', 'x-amz-crc32': '2603277233'}, 'RetryAttempts': 0}}
-Email fetched: None
-LAMBDA_WARNING: Unhandled exception. The most likely cause is an issue in the function code. However, in rare cases, a Lambda runtime update can cause unexpected function behavior. For functions using managed runtimes, runtime updates can be triggered by a function change, or can be applied automatically. To determine if the runtime has been updated, check the runtime version in the INIT_START log entry. If this error correlates with a change in the runtime version, you may be able to mitigate this error by temporarily rolling back to the previous runtime version. For more information, see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-update.html
-[ERROR] NameError: name 'json_payload' is not defined
-Traceback (most recent call last):
-  File "/var/task/lambda_function.py", line 123, in lambda_handler
-    req = urllib.request.Request(api_endpoint, data=json_payload, method="POST")END RequestId: 1b96561e-ca93-4772-964f-fd2209651600
-REPORT RequestId: 1b96561e-ca93-4772-964f-fd2209651600	Duration: 2814.68 ms	Billed Duration: 2815 ms	Memory Size: 128 MB	Max Memory Used: 78 MB	Init Duration: 287.54 ms
-
-Request ID
-1b96561e-ca93-4772-964f-fd2209651600
