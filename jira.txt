@@ -1,28 +1,135 @@
-Test Event Name
-test
+import json
+import boto3
+from botocore.exceptions import ClientError
 
-Response
-{
-  "errorMessage": "Syntax error in module 'lambda_function': unindent does not match any outer indentation level (lambda_function.py, line 34)",
-  "errorType": "Runtime.UserCodeSyntaxError",
-  "requestId": "",
-  "stackTrace": [
-    "  File \"/var/task/lambda_function.py\" Line 34\n       payload = {\n"
-  ]
-}
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('VoucherDetails')
 
-Function Logs
-[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': unindent does not match any outer indentation level (lambda_function.py, line 34)
-Traceback (most recent call last):
-  File "/var/task/lambda_function.py" Line 34
-       payload = {INIT_REPORT Init Duration: 139.00 ms	Phase: init	Status: error	Error Type: Runtime.UserCodeSyntaxError
-[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': unindent does not match any outer indentation level (lambda_function.py, line 34)
-Traceback (most recent call last):
-  File "/var/task/lambda_function.py" Line 34
-       payload = {INIT_REPORT Init Duration: 1430.71 ms	Phase: invoke	Status: error	Error Type: Runtime.UserCodeSyntaxError
-START RequestId: cd9f9322-7b43-4fec-9d4c-b7f2c0671b80 Version: $LATEST
-END RequestId: cd9f9322-7b43-4fec-9d4c-b7f2c0671b80
-REPORT RequestId: cd9f9322-7b43-4fec-9d4c-b7f2c0671b80	Duration: 1458.78 ms	Billed Duration: 1459 ms	Memory Size: 128 MB	Max Memory Used: 42 MB	Status: error	Error Type: Runtime.UserCodeSyntaxError
-
-Request ID
-cd9f9322-7b43-4fec-9d4c-b7f2c0671b80
+def lambda_handler(event, context):
+    # Extract the ID from the event (assuming it's passed in event)
+    id_value = event.get('id_value', None)
+    
+    if id_value is None:
+        return {
+            "statusCode": 400,
+            "body": json.dumps("ID value not provided in the event")
+        }
+    
+    # Retrieve data from DynamoDB
+    try:
+        response = table.get_item(Key={'ID': id_value})
+        item = response.get('Item', None)
+        
+        if not item:
+            return {
+                "statusCode": 404,
+                "body": json.dumps(f"Item with ID {id_value} not found in DynamoDB")
+            }
+        
+        # Log retrieved item from DynamoDB
+        print(f"DynamoDB response: {response}")
+        
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+        return {
+            "statusCode": 500,
+            "body": json.dumps("Error retrieving data from DynamoDB")
+        }
+    
+    # Fallback to dummy email if not found
+    email = item.get('Email')
+    if not email:
+        email = "dummy@example.com"
+        print("Email not found in DynamoDB. Using dummy email for testing.")
+    
+    # Construct the payload for Klaviyo
+    payload = {
+        "data": {
+            "type": "event",
+            "attributes": {
+                "profile": {
+                    "data": {
+                        "type": "profile",
+                        "attributes": {
+                            "email": email
+                        }
+                    }
+                },
+                "metric": {
+                    "data": {
+                        "type": "metric",
+                        "attributes": {
+                            "name": "OTPG voucher_email"
+                        }
+                    }
+                },
+                "properties": {
+                    "flight_details": {
+                        "actual_arrival_time": item.get('ActualArrivalTime', None),
+                        "expected_arrival_time": item.get('ExpectedArrivalTime', None),
+                        "pnr_booking_id": id_value,
+                        "time_length_of_delay": None
+                    },
+                    "passengers": [
+                        {
+                            "first_name": item.get('PassengerFirstName', 'Unknown'),
+                            "last_name": item.get('PassengerLastName', 'Unknown'),
+                            "passenger_type": "adult",
+                            "voucher": {
+                                "expiry_date": item.get('VoucherExpiryDate', None),
+                                "unique_voucher_code": item.get('VoucherCode', None),
+                                "voucher_value": item.get('VoucherValue', None)
+                            }
+                        },
+                        {
+                            "first_name": "Unknown",
+                            "last_name": "Unknown",
+                            "passenger_type": "child",
+                            "voucher": {
+                                "expiry_date": None,
+                                "unique_voucher_code": None,
+                                "voucher_value": None,
+                                "message": "Passenger must be over 18 years old"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+    
+    # Log the payload
+    print(f"Payload: {json.dumps(payload)}")
+    
+    # Prepare headers and send request to Klaviyo API
+    klaviyo_api_key = "pk_c1031f8fd7cae03b92be86f68eb85bf2f4"
+    headers = {
+        'Authorization': f'Klaviyo-API-Key {klaviyo_api_key}',
+        'Content-Type': 'application/json',
+        'Revision': '2023-01-01'
+    }
+    
+    try:
+        response = boto3.client('lambda').invoke(
+            FunctionName="KlaviyoNotifier",
+            InvocationType="RequestResponse",
+            Payload=json.dumps(payload)
+        )
+        print(f"Klaviyo API response: {response}")
+        if response['StatusCode'] == 200:
+            return {
+                "statusCode": 200,
+                "body": json.dumps("Notification sent successfully")
+            }
+        else:
+            return {
+                "statusCode": response['StatusCode'],
+                "body": json.dumps(f"Failed to send notification: {response['body']}")
+            }
+    
+    except Exception as e:
+        print(f"HTTP Error: {str(e)}")
+        return {
+            "statusCode": 500,
+            "body": json.dumps(f"Failed to send notification: {str(e)}")
+        }
