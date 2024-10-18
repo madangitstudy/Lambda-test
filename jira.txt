@@ -1,28 +1,117 @@
-Test Event Name
-test
+import json
+import boto3
+from botocore.exceptions import ClientError
 
-Response
-{
-  "errorMessage": "Syntax error in module 'lambda_function': unterminated string literal (detected at line 54) (lambda_function.py, line 54)",
-  "errorType": "Runtime.UserCodeSyntaxError",
-  "requestId": "",
-  "stackTrace": [
-    "  File \"/var/task/lambda_function.py\" Line 54\n                                \"email\": \"dylanreeveswasik@gmail.com"
-  ]
-}
+# Initialize DynamoDB and Lambda clients
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('VoucherDetails')
+lambda_client = boto3.client('lambda')
 
-Function Logs
-[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': unterminated string literal (detected at line 54) (lambda_function.py, line 54)
-Traceback (most recent call last):
-  File "/var/task/lambda_function.py" Line 54
-                                "email": "dylanreeveswasik@gmail.comINIT_REPORT Init Duration: 147.78 ms	Phase: init	Status: error	Error Type: Runtime.UserCodeSyntaxError
-[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': unterminated string literal (detected at line 54) (lambda_function.py, line 54)
-Traceback (most recent call last):
-  File "/var/task/lambda_function.py" Line 54
-                                "email": "dylanreeveswasik@gmail.comINIT_REPORT Init Duration: 1479.18 ms	Phase: invoke	Status: error	Error Type: Runtime.UserCodeSyntaxError
-START RequestId: 563f2f7d-820a-4d66-b6e3-c8c885160404 Version: $LATEST
-END RequestId: 563f2f7d-820a-4d66-b6e3-c8c885160404
-REPORT RequestId: 563f2f7d-820a-4d66-b6e3-c8c885160404	Duration: 1503.83 ms	Billed Duration: 1504 ms	Memory Size: 128 MB	Max Memory Used: 42 MB	Status: error	Error Type: Runtime.UserCodeSyntaxError
+def lambda_handler(event, context):
+    # Extract PNR from the event (you can change this logic based on how the event is structured)
+    pnr = event.get('PNR', 'TVUVPJ')
 
-Request ID
-563f2f7d-820a-4d66-b6e3-c8c885160404
+    # Query DynamoDB to retrieve voucher details based on PNR
+    try:
+        response = table.get_item(Key={'PNR': pnr})
+        item = response.get('Item', None)
+
+        if not item:
+            return {
+                'statusCode': 404,
+                'body': json.dumps(f'No voucher details found for PNR: {pnr}')
+            }
+
+        print(f"DynamoDB response: {item}")
+        
+        # If email is not found in DynamoDB, use a dummy email for testing purposes
+        email = item.get('Email', 'dummy@example.com')
+        if email is None:
+            print("Email not found in DynamoDB. Using dummy email for testing.")
+            email = "dummy@example.com"
+
+        # Prepare the payload for Klaviyo
+        payload = {
+            "data": {
+                "type": "event",
+                "attributes": {
+                    "profile": {
+                        "data": {
+                            "type": "profile",
+                            "attributes": {
+                                "email": email
+                            }
+                        }
+                    },
+                    "metric": {
+                        "data": {
+                            "type": "metric",
+                            "attributes": {
+                                "name": "OTPG voucher_email"
+                            }
+                        }
+                    },
+                    "properties": {
+                        "flight_details": {
+                            "actual_arrival_time": None,
+                            "expected_arrival_time": None,
+                            "pnr_booking_id": item['ID'],
+                            "time_length_of_delay": None
+                        },
+                        "passengers": [
+                            {
+                                "first_name": item['PassengerFirstName'],
+                                "last_name": item['PassengerLastName'],
+                                "passenger_type": "adult",
+                                "voucher": {
+                                    "expiry_date": item['VoucherExpiryDate'],
+                                    "unique_voucher_code": item['VoucherCode'],
+                                    "voucher_value": item['VoucherValue']
+                                }
+                            },
+                            {
+                                "first_name": "Unknown",
+                                "last_name": "Unknown",
+                                "passenger_type": "child",
+                                "voucher": {
+                                    "expiry_date": None,
+                                    "unique_voucher_code": None,
+                                    "voucher_value": None,
+                                    "message": "Passenger must be over 18 years old"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        print(f"Payload: {json.dumps(payload)}")
+
+        # Invoke the KlaviyoNotifier Lambda function
+        try:
+            response = lambda_client.invoke(
+                FunctionName='KlaviyoNotifier',
+                InvocationType='RequestResponse',
+                Payload=json.dumps(payload)
+            )
+            print(f"Lambda invoke response: {response}")
+            
+            return {
+                'statusCode': 200,
+                'body': json.dumps(f'Notification sent successfully for PNR: {pnr}')
+            }
+
+        except ClientError as e:
+            print(f"Failed to send notification: {str(e)}")
+            return {
+                'statusCode': 500,
+                'body': json.dumps(f'Failed to send notification: {str(e)}')
+            }
+
+    except ClientError as e:
+        print(f"DynamoDB query failed: {str(e)}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps(f'Error fetching voucher details: {str(e)}')
+        }
