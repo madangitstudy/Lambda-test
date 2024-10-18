@@ -1,6 +1,138 @@
+import json
+import boto3
+import re
+import requests  # Make sure requests is included in your Lambda deployment package
+
 def lambda_handler(event, context):
-    # Set API endpoint
+    # Initialize DynamoDB client
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('VoucherDetails')  # Your DynamoDB table name
+
+    # Extract ID from event
+    id_value = event.get("id")
+    
+    if not id_value:
+        return {
+            "statusCode": 400,
+            "body": "ID value is missing from the event input."
+        }
+    
+    # Debug statement to show the id_value
+    print(f"ID value received: {id_value}")
+
+    # Fetch the voucher details from DynamoDB using the ID
+    try:
+        print(f"Fetching item with key: {{'ID': '{id_value}'}}")
+        response = table.get_item(Key={'ID': id_value})
+        voucher_details = response.get('Item')
+
+        print(f"DynamoDB response: {response}")
+
+        if not voucher_details:
+            return {
+                "statusCode": 404,
+                "body": "Voucher details not found."
+            }
+    except Exception as e:
+        print(f"Error fetching from DynamoDB: {str(e)}")
+        return {
+            "statusCode": 500,
+            "body": "Error fetching from DynamoDB."
+        }
+
+    # Extract relevant details from DynamoDB
+    email = voucher_details.get('Email')
+    voucher_code = voucher_details.get('VoucherCode')
+    voucher_expiry_date = voucher_details.get('VoucherExpiryDate')
+    voucher_value = voucher_details.get('VoucherValue')
+
+    # Clean the voucher_value to convert it to a float
+    if isinstance(voucher_value, str):
+        voucher_value_cleaned = re.sub(r'[^\d.]+', '', voucher_value)
+        voucher_value = float(voucher_value_cleaned) if voucher_value_cleaned else 0.0
+
+    child_first_name = voucher_details.get('ChildPassengerFirstName', None)
+    child_last_name = voucher_details.get('ChildPassengerLastName', None)
+
+    # Prepare the data payload for Klaviyo
+    payload = {
+        "data": {
+            "type": "event",
+            "attributes": {
+                "profile": {
+                    "data": {
+                        "type": "profile",
+                        "attributes": {
+                            "email": email
+                        }
+                    }
+                },
+                "metric": {
+                    "data": {
+                        "type": "metric",
+                        "attributes": {
+                            "name": "OTPG voucher_email"
+                        }
+                    }
+                },
+                "properties": {
+                    "flight_details": {
+                        "actual_arrival_time": "2023-07-26T13:00:00",
+                        "expected_arrival_time": "2023-07-26T12:00:00",
+                        "pnr_booking_id": id_value,
+                        "time_length_of_delay": 60
+                    },
+                    "passengers": [
+                        {
+                            "first_name": voucher_details.get('AdultPassengerFirstName'),
+                            "last_name": voucher_details.get('AdultPassengerLastName'),
+                            "passenger_type": "adult",
+                            "voucher": {
+                                "expiry_date": voucher_expiry_date,
+                                "unique_voucher_code": voucher_code,
+                                "voucher_value": voucher_value
+                            }
+                        },
+                        {
+                            "first_name": child_first_name if child_first_name else "Unknown",
+                            "last_name": child_last_name if child_last_name else "Unknown",
+                            "passenger_type": "child",
+                            "voucher": {
+                                "expiry_date": voucher_expiry_date,
+                                "unique_voucher_code": f"CHILD-{voucher_code}",
+                                "voucher_value": voucher_value / 2,
+                                "message": "Passenger must be over 18 years old"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
+    # Set API endpoint and headers
     api_endpoint = "https://a.klaviyo.com/api/events/"
     endpoint_token = "Klaviyo-API-Key pk_c1031f8fd7cae03b92be86f68eb85bf2f4"  # Ensure this is the correct key
-    revision_date = "2023-10-10"  # Set the required revision date
-I need to push the notification  to Klaviyo account
+    headers = {
+        "Authorization": endpoint_token,
+        "revision": revision_date,
+        "Content-Type": "application/json"
+    }
+
+    # Push the notification to Klaviyo
+    try:
+        klaviyo_response = requests.post(api_endpoint, headers=headers, json=payload)
+        klaviyo_response.raise_for_status()  # Raises an HTTPError if the response was an error
+        print("Successfully sent data to Klaviyo.")
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending data to Klaviyo: {str(e)}")
+        return {
+            "statusCode": 500,
+            "body": "Error sending data to Klaviyo."
+        }
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps("Event processed successfully."),
+        "payload": payload  # Return the payload for debugging purposes
+    }
