@@ -1,13 +1,114 @@
-Test Event Name
-test-event
+import json
+import urllib.request
+import boto3
+import logging
 
-Response
-{
-  "statusCode": 400,
-  "body": "ID value is missing from the event input."
-}
+# Initialize logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
-Function Logs
-START RequestId: 39c43ea0-d930-4128-8f52-04c683526114 Version: $LATEST
-END RequestId: 39c43ea0-d930-4128-8f52-04c683526114
-REPORT RequestId: 39c43ea0-d930-4128-8f52-04c683526114	Duration: 1.87 ms	Billed Duration: 2 ms	Memory Size: 128 MB	Max Memory Used: 76 MB	Init Duration: 481.84 ms
+# Initialize DynamoDB client
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('VoucherDetails')
+
+def lambda_handler(event, context):
+    logger.info(f"Received event: {event}")
+
+    try:
+        # Scan DynamoDB for all passenger records
+        response = table.scan()
+        items = response.get('Items', [])
+
+        if not items:
+            return {
+                "statusCode": 404,
+                "body": "No data found in the table."
+            }
+
+        # Prepare the data payload for Klaviyo
+        payload = {
+            "data": {
+                "type": "event",
+                "attributes": {
+                    "profile": {
+                        "data": {
+                            "type": "profile",
+                            "attributes": {
+                                "email": items[0].get('Email')  # Assuming all passengers have the same email
+                            }
+                        }
+                    },
+                    "metric": {
+                        "data": {
+                            "type": "metric",
+                            "attributes": {
+                                "name": "OTPG voucher_email"  # Event name
+                            }
+                        }
+                    },
+                    "properties": {
+                        "flight_details": {
+                            "actual_arrival_time": "2023-07-26T13:00:00",  # Keep as is
+                            "expected_arrival_time": "2023-07-26T12:00:00",  # Keep as is
+                            "pnr_booking_id": "Your_PNR_here",  # Update as necessary
+                            "time_length_of_delay": 60  # Keep as is
+                        },
+                        "passengers": []
+                    }
+                }
+            }
+        }
+
+        # Loop through each passenger and add their details to the payload
+        for item in items:
+            passenger = {
+                "first_name": item.get('PassengerFirstName'),  # Get first name from DynamoDB
+                "last_name": item.get('PassengerLastName'),    # Get last name from DynamoDB
+                "passenger_type": item.get('PassengerType', 'adult'),  # Assuming you have a type field
+                "voucher": {
+                    "expiry_date": item.get('VoucherExpiryDate'),  # Get expiry date from DynamoDB
+                    "unique_voucher_code": item.get('VoucherCode'),  # Get voucher code from DynamoDB
+                    "voucher_value": item.get('VoucherValue')  # Get voucher value from DynamoDB
+                }
+            }
+            payload['data']['attributes']['properties']['passengers'].append(passenger)
+
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": f"Error fetching data from DynamoDB: {str(e)}"
+        }
+
+    # Convert payload to JSON
+    json_payload = json.dumps(payload).encode('utf-8')
+
+    # Set API endpoint
+    api_endpoint = "https://a.klaviyo.com/api/events/"
+    endpoint_token = "Klaviyo-API-Key pk_c1031f8fd7cae03b92be86f68eb85bf2f4"  # Ensure this is the correct key
+    revision_date = "2023-10-10"  # Set the required revision date
+
+    # Create request
+    req = urllib.request.Request(api_endpoint, data=json_payload, method="POST")
+    req.add_header("Authorization", endpoint_token)  # Use "Authorization" header
+    req.add_header("Content-Type", "application/json")
+    req.add_header("REVISION", revision_date)  # Add the required REVISION header
+
+    try:
+        # Send the request
+        with urllib.request.urlopen(req) as response:
+            response_body = response.read()
+            return {
+                "statusCode": 200,
+                "body": response_body.decode('utf-8')
+            }
+    except urllib.error.HTTPError as e:
+        error_message = e.read().decode('utf-8')
+        return {
+            "statusCode": e.code,
+            "body": error_message
+        }
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": f"Internal server error: {str(e)}"
+        }
