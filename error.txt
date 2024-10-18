@@ -1,18 +1,58 @@
-Test Event Name
-test
+import json
+import boto3
 
-Response
-{
-  "statusCode": 500,
-  "body": "Error fetching from DynamoDB."
-}
+def lambda_handler(event, context):
+    # Initialize the DynamoDB resource
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('VoucherDetails')  # Replace with your table name
 
-Function Logs
-START RequestId: 2e2f645d-8559-497b-bff9-d2b3fedb12c0 Version: $LATEST
-ID value received: TVUVPJ-b2eb72
-Error fetching from DynamoDB: An error occurred (ValidationException) when calling the GetItem operation: The provided key element does not match the schema
-END RequestId: 2e2f645d-8559-497b-bff9-d2b3fedb12c0
-REPORT RequestId: 2e2f645d-8559-497b-bff9-d2b3fedb12c0	Duration: 2761.85 ms	Billed Duration: 2762 ms	Memory Size: 128 MB	Max Memory Used: 78 MB	Init Duration: 286.69 ms
-
-Request ID
-2e2f645d-8559-497b-bff9-d2b3fedb12c0
+    # Extract the ID from the event
+    id_value = event.get('id')
+    
+    if not id_value:
+        return {
+            "statusCode": 400,
+            "body": json.dumps("ID value is missing from the event input.")
+        }
+    
+    print(f"ID value received: {id_value}")
+    
+    try:
+        # Fetch the item from DynamoDB using the primary key 'ID'
+        response = table.get_item(Key={'ID': id_value})
+        
+        if 'Item' not in response:
+            return {
+                "statusCode": 404,
+                "body": json.dumps("Item not found.")
+            }
+        
+        # Get the voucher details
+        voucher_details = response['Item']
+        
+        # Extract values for processing
+        passengers = event['data']['attributes']['properties']['passengers']
+        
+        for passenger in passengers:
+            if passenger['passenger_type'] == 'adult':
+                voucher_value = passenger['voucher']['voucher_value']
+                print(f"Adult voucher value: {voucher_value}")
+            elif passenger['passenger_type'] == 'child':
+                if voucher_value is not None:
+                    # Set child voucher value to half of adult
+                    child_voucher_value = voucher_value / 2
+                    passenger['voucher']['voucher_value'] = child_voucher_value
+        
+        # Here you can proceed with any additional processing or updates to DynamoDB
+        
+        return {
+            "statusCode": 200,
+            "body": json.dumps("Voucher processed successfully.")
+        }
+    
+    except Exception as e:
+        print(f"Error fetching from DynamoDB: {e}")
+        return {
+            "statusCode": 500,
+            "body": json.dumps("Error fetching from DynamoDB.")
+        }
