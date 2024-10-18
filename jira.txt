@@ -59,19 +59,3 @@
     }
   }
 }
-
-getting error while testing in postman
-{
-    "errors": [
-        {
-            "id": "f20902c6-eb8c-4dc6-a24d-f7cc494a47aa",
-            "status": 400,
-            "code": "invalid_revision",
-            "title": "'REVISION' is a required header and must be of the format YYYY-MM-DD",
-            "detail": "'REVISION' is a required header and must be of the format YYYY-MM-DD",
-            "source": {
-                "pointer": "/data/"
-            }
-        }
-    ]
-}
