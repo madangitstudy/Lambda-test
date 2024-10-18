@@ -3,18 +3,26 @@ test
 
 Response
 {
-  "statusCode": 500,
-  "body": "\"Failed to send notification: An error occurred (ResourceNotFoundException) when calling the Invoke operation: Function not found: arn:aws:lambda:ca-central-1:381492312030:function:KlaviyoNotifier:$LATEST\""
+  "errorMessage": "Syntax error in module 'lambda_function': unterminated string literal (detected at line 54) (lambda_function.py, line 54)",
+  "errorType": "Runtime.UserCodeSyntaxError",
+  "requestId": "",
+  "stackTrace": [
+    "  File \"/var/task/lambda_function.py\" Line 54\n                                \"email\": \"dylanreeveswasik@gmail.com"
+  ]
 }
 
 Function Logs
-START RequestId: 997fa659-3a0b-4647-939e-c2344ad420cb Version: $LATEST
-DynamoDB response: {'Item': {'ArrivalCity': 'Toronto Pearson ', 'VoucherValue': '$60CAD', 'DepartureCity': 'Vancouver ', 'PassengerFirstName': 'CHARLES', 'ArrivalAirportCode': 'YYZ', 'PassengerLastName': 'SUAREZ', 'Email': None, 'PNR': 'TVUVPJ', 'VoucherID': 'n/a', 'VoucherExpiryDate': '2024-12-16 19:50:02', 'FlightStatus': 'delayed', 'VoucherCode': 'VCHR-VFZVVlBK', 'ID': 'TVUVPJ-b2eb72', 'DepartureAirportCode': 'YVR', 'FlightNumber': '602'}, 'ResponseMetadata': {'RequestId': 'BUISQLC9BC35UPII8QJQKV1F5RVV4KQNSO5AEMVJF66Q9ASUAAJG', 'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'Server', 'date': 'Fri, 18 Oct 2024 19:06:35 GMT', 'content-type': 'application/x-amz-json-1.0', 'content-length': '490', 'connection': 'keep-alive', 'x-amzn-requestid': 'BUISQLC9BC35UPII8QJQKV1F5RVV4KQNSO5AEMVJF66Q9ASUAAJG', 'x-amz-crc32': '2603277233'}, 'RetryAttempts': 0}}
-Email not found in DynamoDB. Using dummy email for testing.
-Payload: {"data": {"type": "event", "attributes": {"profile": {"data": {"type": "profile", "attributes": {"email": "dummy@example.com"}}}, "metric": {"data": {"type": "metric", "attributes": {"name": "OTPG voucher_email"}}}, "properties": {"flight_details": {"actual_arrival_time": null, "expected_arrival_time": null, "pnr_booking_id": "TVUVPJ-b2eb72", "time_length_of_delay": null}, "passengers": [{"first_name": "CHARLES", "last_name": "SUAREZ", "passenger_type": "adult", "voucher": {"expiry_date": "2024-12-16 19:50:02", "unique_voucher_code": "VCHR-VFZVVlBK", "voucher_value": "$60CAD"}}, {"first_name": "Unknown", "last_name": "Unknown", "passenger_type": "child", "voucher": {"expiry_date": null, "unique_voucher_code": null, "voucher_value": null, "message": "Passenger must be over 18 years old"}}]}}}}
-HTTP Error: An error occurred (ResourceNotFoundException) when calling the Invoke operation: Function not found: arn:aws:lambda:ca-central-1:381492312030:function:KlaviyoNotifier:$LATEST
-END RequestId: 997fa659-3a0b-4647-939e-c2344ad420cb
-REPORT RequestId: 997fa659-3a0b-4647-939e-c2344ad420cb	Duration: 1250.84 ms	Billed Duration: 1251 ms	Memory Size: 128 MB	Max Memory Used: 81 MB	Init Duration: 411.68 ms
+[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': unterminated string literal (detected at line 54) (lambda_function.py, line 54)
+Traceback (most recent call last):
+  File "/var/task/lambda_function.py" Line 54
+                                "email": "dylanreeveswasik@gmail.comINIT_REPORT Init Duration: 147.78 ms	Phase: init	Status: error	Error Type: Runtime.UserCodeSyntaxError
+[ERROR] Runtime.UserCodeSyntaxError: Syntax error in module 'lambda_function': unterminated string literal (detected at line 54) (lambda_function.py, line 54)
+Traceback (most recent call last):
+  File "/var/task/lambda_function.py" Line 54
+                                "email": "dylanreeveswasik@gmail.comINIT_REPORT Init Duration: 1479.18 ms	Phase: invoke	Status: error	Error Type: Runtime.UserCodeSyntaxError
+START RequestId: 563f2f7d-820a-4d66-b6e3-c8c885160404 Version: $LATEST
+END RequestId: 563f2f7d-820a-4d66-b6e3-c8c885160404
+REPORT RequestId: 563f2f7d-820a-4d66-b6e3-c8c885160404	Duration: 1503.83 ms	Billed Duration: 1504 ms	Memory Size: 128 MB	Max Memory Used: 42 MB	Status: error	Error Type: Runtime.UserCodeSyntaxError
 
 Request ID
-997fa659-3a0b-4647-939e-c2344ad420cb
+563f2f7d-820a-4d66-b6e3-c8c885160404
