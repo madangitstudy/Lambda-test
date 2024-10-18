@@ -1,61 +1,23 @@
+Test Event Name
+test
+
+Response
 {
-    "id": "TVUVPJ-b2eb72",  // Replace with a valid ID from your DynamoDB
-    "data": {
-        "type": "event",
-        "attributes": {
-            "profile": {
-                "data": {
-                    "type": "profile",
-                    "attributes": {
-                        "email": "dylanreeveswasik@gmail.com"
-                    }
-                }
-            },
-            "metric": {
-                "data": {
-                    "type": "metric",
-                    "attributes": {
-                        "name": "OTPG voucher_email"
-                    }
-                }
-            },
-            "properties": {
-                "flight_details": {
-                    "actual_arrival_time": "2023-07-26T13:00:00",
-                    "arrival_airport_code": "LAX",
-                    "arrival_city": "Los Angeles",
-                    "departure_airport_code": "JFK",
-                    "departure_city": "New York",
-                    "expected_arrival_time": "2023-07-26T12:00:00",
-                    "flight_number": "AA101",
-                    "flight_status": "Delayed",
-                    "pnr_booking_id": "ABC123",
-                    "time_length_of_delay": 60
-                },
-                "passengers": [
-                    {
-                        "first_name": "John",
-                        "last_name": "Doe",
-                        "passenger_type": "adult",
-                        "voucher": {
-                            "expiry_date": "2023-07-31",
-                            "unique_voucher_code": "Voucher123",
-                            "voucher_value": 50
-                        }
-                    },
-                    {
-                        "first_name": "Jane",
-                        "last_name": "Doe",
-                        "passenger_type": "child",
-                        "voucher": {
-                            "expiry_date": null,
-                            "unique_voucher_code": null,
-                            "voucher_value": null,
-                            "message": "Passenger must be over 18 years old"
-                        }
-                    }
-                ]
-            }
-        }
-    }
+  "errorMessage": "unsupported operand type(s) for /: 'str' and 'int'",
+  "errorType": "TypeError",
+  "requestId": "08896eb6-e98a-428c-a9d7-fb662df792cd",
+  "stackTrace": [
+    "  File \"/var/task/lambda_function.py\", line 103, in lambda_handler\n    \"voucher_value\": voucher_value / 2,  # Set child voucher value to half of adult\n"
+  ]
 }
+
+Function Logs
+START RequestId: 08896eb6-e98a-428c-a9d7-fb662df792cd Version: $LATEST
+Received event: {"id": "TVUVPJ-b2eb72", "data": {"type": "event", "attributes": {"profile": {"data": {"type": "profile", "attributes": {"email": "dylanreeveswasik@gmail.com"}}}, "metric": {"data": {"type": "metric", "attributes": {"name": "OTPG voucher_email"}}}, "properties": {"flight_details": {"actual_arrival_time": "2023-07-26T13:00:00", "arrival_airport_code": "LAX", "arrival_city": "Los Angeles", "departure_airport_code": "JFK", "departure_city": "New York", "expected_arrival_time": "2023-07-26T12:00:00", "flight_number": "AA101", "flight_status": "Delayed", "pnr_booking_id": "ABC123", "time_length_of_delay": 60}, "passengers": [{"first_name": "John", "last_name": "Doe", "passenger_type": "adult", "voucher": {"expiry_date": "2023-07-31", "unique_voucher_code": "Voucher123", "voucher_value": 50}}, {"first_name": "Jane", "last_name": "Doe", "passenger_type": "child", "voucher": {"expiry_date": null, "unique_voucher_code": null, "voucher_value": null, "message": "Passenger must be over 18 years old"}}]}}}}
+ID value found: TVUVPJ-b2eb72
+LAMBDA_WARNING: Unhandled exception. The most likely cause is an issue in the function code. However, in rare cases, a Lambda runtime update can cause unexpected function behavior. For functions using managed runtimes, runtime updates can be triggered by a function change, or can be applied automatically. To determine if the runtime has been updated, check the runtime version in the INIT_START log entry. If this error correlates with a change in the runtime version, you may be able to mitigate this error by temporarily rolling back to the previous runtime version. For more information, see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-update.html
+[ERROR] TypeError: unsupported operand type(s) for /: 'str' and 'int'
+Traceback (most recent call last):
+  File "/var/task/lambda_function.py", line 103, in lambda_handler
+    "voucher_value": voucher_value / 2,  # Set child voucher value to half of adultEND RequestId: 08896eb6-e98a-428c-a9d7-fb662df792cd
+REPORT RequestId: 08896eb6-e98a-428c-a9d7-fb662df792cd	Duration: 567.28 ms	Billed Duration: 568 ms	Memory Size: 128 MB	Max Memory Used: 78 MB	Init Duration: 473.23 ms
