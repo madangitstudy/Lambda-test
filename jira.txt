@@ -7,10 +7,10 @@ dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('VoucherDetails')
 
 def lambda_handler(event, context):
-    # Assuming the 'ID' value is passed in the event
-    pnr_value = event.get("PNR")  # Adjust based on your event structure
+    # Get the ID value from the event
+    id_value = event.get("ID")  # Change from "PNR" to "ID"
 
-    if not pnr_value:
+    if not id_value:
         return {
             "statusCode": 400,
             "body": json.dumps("ID value not provided in the event")
@@ -20,7 +20,7 @@ def lambda_handler(event, context):
         # Fetching the item using the correct key
         response = table.get_item(
             Key={
-                'ID': pnr_value  # Make sure this matches your DynamoDB schema
+                'ID': id_value  # Make sure this matches your DynamoDB schema
             }
         )
 
@@ -130,82 +130,3 @@ def invoke_klaviyo_notifier(payload):
     except ClientError as e:
         print(f"Failed to send notification: {e}")
         raise
-
-Test Event Name
-test
-
-Response
-{
-  "statusCode": 404,
-  "body": "\"No item found with the provided ID\""
-}
-
-Function Logs
-START RequestId: c02ffb38-b78b-4b49-87f2-ecf997d7ff4e Version: $LATEST
-END RequestId: c02ffb38-b78b-4b49-87f2-ecf997d7ff4e
-REPORT RequestId: c02ffb38-b78b-4b49-87f2-ecf997d7ff4e	Duration: 506.86 ms	Billed Duration: 507 ms	Memory Size: 128 MB	Max Memory Used: 78 MB
-
-Request ID
-c02ffb38-b78b-4b49-87f2-ecf997d7ff4e
-{
-  "ID": "TVUVPJ-b2eb72",
-  "PNR":"TVUVPJ",
-  "data": {
-    "type": "event",
-    "attributes": {
-      "profile": {
-        "data": {
-          "type": "profile",
-          "attributes": {
-            "email": "dylanreeveswasik@gmail.com"
-          }
-        }
-      },
-      "metric": {
-        "data": {
-          "type": "metric",
-          "attributes": {
-            "name": "OTPG voucher_email"
-          }
-        }
-      },
-      "properties": {
-        "flight_details": {
-          "actual_arrival_time": "2023-07-26T13:00:00",
-          "arrival_airport_code": "LAX",
-          "arrival_city": "Los Angeles",
-          "departure_airport_code": "JFK",
-          "departure_city": "New York",
-          "expected_arrival_time": "2023-07-26T12:00:00",
-          "flight_number": "AA101",
-          "flight_status": "Delayed",
-          "pnr_booking_id": "ABC123",
-          "time_length_of_delay": 60
-        },
-        "passengers": [
-          {
-            "first_name": "John",
-            "last_name": "Doe",
-            "passenger_type": "adult",
-            "voucher": {
-              "expiry_date": "2023-07-31",
-              "unique_voucher_code": "Voucher123",
-              "voucher_value": 50
-            }
-          },
-          {
-            "first_name": "Jane",
-            "last_name": "Doe",
-            "passenger_type": "child",
-            "voucher": {
-              "expiry_date": null,
-              "unique_voucher_code": null,
-              "voucher_value": null,
-              "message": "Passenger must be over 18 years old"
-            }
-          }
-        ]
-      }
-    }
-  }
-}
